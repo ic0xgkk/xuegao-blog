@@ -1,0 +1,106 @@
+baseURL: 'https://blog.xuegaogg.com/'
+footnoteReturnLinkContents: ↩
+languageCode: zh-CN
+title: 雪糕博客
+description: 一位不愿意将就并且专注于网络技术的攻城狮的博客
+enableEmoji: true
+paginate: 10
+summaryLength: 100
+timeZone: Asia/Hong_Kong
+theme: ["hugo-notice", "PaperMod"]
+enableInlineShortcodes: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+minify:
+  disableXML: true
+  minifyOutput: true
+
+params:
+  env: production
+  defaultTheme: auto
+  AuthorName: 雪糕
+  GitHubUser: ic0xgkk
+  SidebarRecentLimit: 15
+  Subtitle: 一位不愿意将就并且专注于网络技术的攻城狮的博客
+  ShowReadingTime: false
+  displayFullLangName: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  disableThemeToggle: false
+  ShowToc: true
+  tocopen: true
+  ShowPostNavLinks: true
+  homeInfoParams:
+    Title: 首页
+    Content: "- Hey! 欢迎来到雪糕的个人博客\n
+    - 此处是一位不愿意将就并且专注于网络技术的攻城狮的博客。能码代码，能运维，能实施，爱好一本正经得瞎jb搞网络\n
+    - \U0001F31F **常年提供各种园区、工作室网络解决方案，维护RouterOS/H3C/华为设备，承接软件开发（含软件定义网络）、Linux维护、方案规划实施等内容。欢迎在关于页面中取得我的联系方式与我联系**\n
+    - 欢迎同行兄弟交流沟通~"
+  socialIcons:
+    - name: github
+      url: 'https://github.com/ic0xgkk'
+    - name: RSS
+      url: index.xml
+  editPost:
+    URL: 'https://github.com/ic0xgkk/xuegao-blog/tree/main/content'
+    Text: 建议修改
+    appendFilePath: true
+markup:
+  highlight:
+    lineNos: false
+    codeFences: false
+    guessSyntax: true
+    style: dracula
+  tableOfContents:
+    endLevel: 5
+    ordered: false
+    startLevel: 2
+  goldmark:
+    renderer:
+      unsafe: true
+  fuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "content"] ##  can be less but not more than shown in list
+sitemap:
+  changefreq: weekly
+  filename: sitemap.xml
+  priority: 0.9
+
+menu:
+    main:
+        - identifier: home
+          name: 首页
+          url: /
+          weight: 1
+        - identifier: archives
+          name: 归档
+          url: /archives/
+          weight: 30
+        - identifier: categories
+          name: 分类
+          url: /categories/
+          weight: 40
+        - identifier: search
+          name: 搜索
+          url: /search/
+          weight: 45
+        - identifier: friends
+          name: 友链
+          url: /friends/
+          weight: 46
+        - identifier: about
+          name: 关于
+          url: /about/
+          weight: 50
