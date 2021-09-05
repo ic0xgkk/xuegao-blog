@@ -70,165 +70,165 @@ summary: 全国大学生数学建模大赛2014年的A题，一种独特的解题
 
 ```matlab
 clc;clear;close;
- pic=imread('test.jpg');
- % subplot(1,2,1),imshow(pic);
- % J=ordfilt2(pic,5,ones(3,4));
- % J=ordfilt2(J,5,ones(3,4)); 
- % J=filter2(fspecial('average',16),J)/255;
- level=graythresh(pic);
- binary_img=im2bw(pic,level);
- % subplot(1,2,2),imshow(binary_img);
- [length,width]=size(binary_img);
- % length &lt;--&gt; y
- % width  &lt;--&gt; x
- discontinuous_object=[];
- for l = 1:length
-     w=1;
-     while w&lt;(width+1)
-         tmp=zeros(1,3);
-         if binary_img(l,w) == 1
-             w=w+1;
-             continue;
-         else
-             blk_let=blank_length(w,l,binary_img,width);
-             tmp=[w,l,blk_let];
-             discontinuous_object=[discontinuous_object;tmp];
-             w=w+blk_let;
-         end
-     end
- end
- [discontinuous_number,tmp_01]=size(discontinuous_object);
- reliable_length=[];
- for i=1:discontinuous_number
-     if discontinuous_object(i,3) &gt; 80
-         reliable_length=[reliable_length;discontinuous_object(i,:)];
-     else
-         continue;
-     end
- end
- [line_num,tmp02]=size(reliable_length);
- reliable_matrix=[];
- for i=1:line_num
-     tmp_matrix=create_matrix(reliable_length(i,:),width,length);
-     reliable_matrix=[reliable_matrix;tmp_matrix];
- end
- [remat_length,tmp03]=size(reliable_matrix);
- right_matrix=[];
- for i=1:(remat_length/4)
-     jud_matr=reliable_matrix(i<em>4-3:i</em>4,:);
-     if binary_img(jud_matr(1,2),jud_matr(1,1))==1&amp;&amp;binary_img(jud_matr(2,2),jud_matr(2,1))==1&amp;&amp;binary_img(jud_matr(3,2),jud_matr(3,1))==1&amp;&amp;binary_img(jud_matr(4,2),jud_matr(4,1))==1
-         right_matrix=[right_matrix;jud_matr];
-     else
-         continue;
-     end
- end
- [right_matr_length,tmp04]=size(right_matrix);
- % imshow(binary_img);
- % hold on;
- % for i=1:(right_matr_length/4)
- %    tmp_matr=right_matrix(i<em>4-3:i</em>4,:);
- %    line([tmp_matr(1,1),tmp_matr(2,1)],[tmp_matr(1,2),tmp_matr(2,2)],'Color','r','LineWidth',1);
- %    line([tmp_matr(2,1),tmp_matr(3,1)],[tmp_matr(2,2),tmp_matr(3,2)],'Color','r','LineWidth',1);
- %    line([tmp_matr(3,1),tmp_matr(4,1)],[tmp_matr(3,2),tmp_matr(4,2)],'Color','r','LineWidth',1);
- %    line([tmp_matr(4,1),tmp_matr(1,1)],[tmp_matr(4,2),tmp_matr(1,2)],'Color','r','LineWidth',1);
- % end
- % hold off;
- all_len=0;
- for i=1:(right_matr_length/4)
-     tmp_matr=right_matrix(i<em>4-3:i</em>4,:);
-     all_len=all_len+(tmp_matr(2,1)-tmp_matr(1,1))/2.0;
- end
- r=all_len/(right_matr_length/4.0);
- r=round(r<em>2); if mod(width,r)==0     matr_num=width/r; else     matr_num=ceil(width/(r</em>1.0));
- end
- full_matrix=zeros(r<em>matr_num); for i=1:length     for j=1:width         full_matrix(i,j)=binary_img(i,j);     end end % imshow(full_matrix); for i=1:matr_num     for j=1:matr_num         if ismember(1,full_matrix(((i-1)</em>r+1):(i<em>r),((j-1)</em>r+1):(j<em>r)) )             full_matrix(((i-1)</em>r+1):(i<em>r),((j-1)</em>r+1):(j*r))=1;
-         end
-     end
- end
- % imshow(full_matrix);
- for i=1:length
-     for j=1:width
-         binary_img(i,j)=full_matrix(i,j);
-     end
- end
- centre=[ceil(length/2.0),ceil(width/2.0)];
- matrix_size=[];
- for y=1:length
-     x=1;
-     while x&lt;=width
-         if binary_img(y,x) == 1
-             x=x+1;
-             continue;
-         else
-             size_tmp=get_black_size(y,x,length,width,r,binary_img);
-             matrix_size=[matrix_size;size_tmp];
-             x=x+size_tmp(1,3);
-         end
-     end
- end
- MAX_SIZE=max(matrix_size(:,4));
- [maxm_length,tmp05]=size(matrix_size);
- for i=1:maxm_length
-     if matrix_size(i,4)==MAX_SIZE
-         MAX_MATRIX=matrix_size(i,:);
-         break;
-     else
-         continue;
-     end
- end
- target_centre=[ceil(MAX_MATRIX(1)+(MAX_MATRIX(3)/2.0)),ceil(MAX_MATRIX(2)+(MAX_MATRIX(3)/2.0))];   % x,y
- hold on;
- imshow(pic);
- line([centre(2),target_centre(2)],[centre(1),target_centre(1)],'Color','r','LineWidth',1);
- hold off;
- function [matrix]=get_black_size(y,x,length,width,r,binary_img)
- sm_y=y;sm_x=x;
- for len=r:width
-     if  (y+len)&gt;0 &amp;&amp; (y+len)&lt;=length &amp;&amp; (x+len)&gt;0 &amp;&amp; (x+len)&lt;=width
-         matrix_tmp=binary_img(y:(y+len),x:(x+len));
-     else
-         sm_length=len-1;
-         s=sm_length<em>sm_length;         matrix=[sm_y,sm_x,sm_length,s];         break;     end     if ismember(1,matrix_tmp) == 1         sm_length=len-1;         s=sm_length</em>sm_length;
-         matrix=[sm_y,sm_x,sm_length,s];
-         break;
-     else
-         continue;
-     end
- end
- end
- function [matrix]=create_matrix(s,w,l)
- matrix_tmp=[];
- if mod(s(1,3),2)==0 %ou shu
-     half_l=s(1,3)/2;
-     x_centre=s(1,1)+half_l;
-     matrix_tmp=[s(1,1),s(1,2)-half_l;
-                 x_centre+half_l,s(1,2)-half_l;
-                 x_centre+half_l,s(1,2)+half_l;
-                 s(1,1),s(1,2)+half_l];
- end
- if mod(s(1,3),2)==1 %ji shu
-     half_l=(s(1,3)-1)/2;
-     x_centre=s(1,1)+half_l;
-     matrix_tmp=[s(1,1),s(1,2)-half_l;
-                 x_centre+half_l,s(1,2)-half_l;
-                 x_centre+half_l,s(1,2)+half_l;
-                 s(1,1),s(1,2)+half_l];
- end
- if s(1,1)&gt;0 &amp;&amp; s(1,1)&lt;=w &amp;&amp; (x_centre+half_l)&gt;0 &amp;&amp; (x_centre+half_l)&lt;=w &amp;&amp; (s(1,2)-half_l)&gt;0 &amp;&amp; (s(1,2)-half_l)&lt;=l &amp;&amp; (s(1,2)+half_l)&gt;0 &amp;&amp; (s(1,2)+half_l)&lt;=l
-    matrix=matrix_tmp;
- else
-    matrix=[];
- end
- end
- function [le]=blank_length(x,y,bpic,width)
- le=0;
- for a=x:width
-     if bpic(y,a) == 1
-         break;
-     else
-         le=le+1;
-         continue;
-     end
- end
- end
+pic=imread('test.jpg');
+% subplot(1,2,1),imshow(pic);
+% J=ordfilt2(pic,5,ones(3,4));
+% J=ordfilt2(J,5,ones(3,4)); 
+% J=filter2(fspecial('average',16),J)/255;
+level=graythresh(pic);
+binary_img=im2bw(pic,level);
+% subplot(1,2,2),imshow(binary_img);
+[length,width]=size(binary_img);
+% length <--> y
+% width  <--> x
+discontinuous_object=[];
+for l = 1:length
+    w=1;
+    while w<(width+1)
+        tmp=zeros(1,3);
+        if binary_img(l,w) == 1
+            w=w+1;
+            continue;
+        else
+            blk_let=blank_length(w,l,binary_img,width);
+            tmp=[w,l,blk_let];
+            discontinuous_object=[discontinuous_object;tmp];
+            w=w+blk_let;
+        end
+    end
+end
+[discontinuous_number,tmp_01]=size(discontinuous_object);
+reliable_length=[];
+for i=1:discontinuous_number
+    if discontinuous_object(i,3) > 80
+        reliable_length=[reliable_length;discontinuous_object(i,:)];
+    else
+        continue;
+    end
+end
+[line_num,tmp02]=size(reliable_length);
+reliable_matrix=[];
+for i=1:line_num
+    tmp_matrix=create_matrix(reliable_length(i,:),width,length);
+    reliable_matrix=[reliable_matrix;tmp_matrix];
+end
+[remat_length,tmp03]=size(reliable_matrix);
+right_matrix=[];
+for i=1:(remat_length/4)
+    jud_matr=reliable_matrix(i4-3:i4,:);
+    if binary_img(jud_matr(1,2),jud_matr(1,1))==1&&binary_img(jud_matr(2,2),jud_matr(2,1))==1&&binary_img(jud_matr(3,2),jud_matr(3,1))==1&&binary_img(jud_matr(4,2),jud_matr(4,1))==1
+        right_matrix=[right_matrix;jud_matr];
+    else
+        continue;
+    end
+end
+[right_matr_length,tmp04]=size(right_matrix);
+% imshow(binary_img);
+% hold on;
+% for i=1:(right_matr_length/4)
+%    tmp_matr=right_matrix(i4-3:i4,:);
+%    line([tmp_matr(1,1),tmp_matr(2,1)],[tmp_matr(1,2),tmp_matr(2,2)],'Color','r','LineWidth',1);
+%    line([tmp_matr(2,1),tmp_matr(3,1)],[tmp_matr(2,2),tmp_matr(3,2)],'Color','r','LineWidth',1);
+%    line([tmp_matr(3,1),tmp_matr(4,1)],[tmp_matr(3,2),tmp_matr(4,2)],'Color','r','LineWidth',1);
+%    line([tmp_matr(4,1),tmp_matr(1,1)],[tmp_matr(4,2),tmp_matr(1,2)],'Color','r','LineWidth',1);
+% end
+% hold off;
+all_len=0;
+for i=1:(right_matr_length/4)
+    tmp_matr=right_matrix(i4-3:i4,:);
+    all_len=all_len+(tmp_matr(2,1)-tmp_matr(1,1))/2.0;
+end
+r=all_len/(right_matr_length/4.0);
+r=round(r2); if mod(width,r)==0     matr_num=width/r; else     matr_num=ceil(width/(r1.0));
+end
+full_matrix=zeros(rmatr_num); for i=1:length     for j=1:width         full_matrix(i,j=binary_img(i,j);     end end % imshow(full_matrix); for i=1:matr_num     forj=1:matr_num         if ismember(1,full_matrix(((i-1)r+1):(ir),((j-1)r+1):(jr)) )            full_matrix(((i-1)r+1):(ir),((j-1)r+1):(j*r))=1;
+        end
+    end
+end
+% imshow(full_matrix);
+for i=1:length
+    for j=1:width
+        binary_img(i,j)=full_matrix(i,j);
+    end
+end
+centre=[ceil(length/2.0),ceil(width/2.0)];
+matrix_size=[];
+for y=1:length
+    x=1;
+    while x<=width
+        if binary_img(y,x) == 1
+            x=x+1;
+            continue;
+        else
+            size_tmp=get_black_size(y,x,length,width,r,binary_img);
+            matrix_size=[matrix_size;size_tmp];
+            x=x+size_tmp(1,3);
+        end
+    end
+end
+MAX_SIZE=max(matrix_size(:,4));
+[maxm_length,tmp05]=size(matrix_size);
+for i=1:maxm_length
+    if matrix_size(i,4)==MAX_SIZE
+        MAX_MATRIX=matrix_size(i,:);
+        break;
+    else
+        continue;
+    end
+end
+target_centre=[ceil(MAX_MATRIX(1)+(MAX_MATRIX(3)/2.0)),ceil(MAX_MATRIX(2)+(MAX_MATRIX(3)/2.0));   % x,y
+hold on;
+imshow(pic);
+line([centre(2),target_centre(2)],[centre(1),target_centre(1)],'Color','r','LineWidth',1);
+hold off;
+function [matrix]=get_black_size(y,x,length,width,r,binary_img)
+sm_y=y;sm_x=x;
+for len=r:width
+    if  (y+len)>0 && (y+len)<=length && (x+len)>0 && (x+len)<=width
+        matrix_tmp=binary_img(y:(y+len),x:(x+len));
+    else
+        sm_length=len-1;
+        s=sm_lengthsm_length;         matrix=[sm_y,sm_x,sm_length,s];         break;     end     if ismember(1,matrix_tmp) == 1         sm_length=len-1;         s=sm_lengthsm_length;
+        matrix=[sm_y,sm_x,sm_length,s];
+        break;
+    else
+        continue;
+    end
+end
+end
+function [matrix]=create_matrix(s,w,l)
+matrix_tmp=[];
+if mod(s(1,3),2)==0 %ou shu
+    half_l=s(1,3)/2;
+    x_centre=s(1,1)+half_l;
+    matrix_tmp=[s(1,1),s(1,2)-half_l;
+                x_centre+half_l,s(1,2)-half_l;
+                x_centre+half_l,s(1,2)+half_l;
+                s(1,1),s(1,2)+half_l];
+end
+if mod(s(1,3),2)==1 %ji shu
+    half_l=(s(1,3)-1)/2;
+    x_centre=s(1,1)+half_l;
+    matrix_tmp=[s(1,1),s(1,2)-half_l;
+                x_centre+half_l,s(1,2)-half_l;
+                x_centre+half_l,s(1,2)+half_l;
+                s(1,1),s(1,2)+half_l];
+end
+if s(1,1)>0 && s(1,1)<=w && (x_centre+half_l)>0 && (x_centre+half_l)<=w && (s(1,2)-half_l)>0 &&(s(1,2)-half_l)<=l && (s(1,2)+half_l)>0 && (s(1,2)+half_l)<=l
+   matrix=matrix_tmp;
+else
+   matrix=[];
+end
+end
+function [le]=blank_length(x,y,bpic,width)
+le=0;
+for a=x:width
+    if bpic(y,a) == 1
+        break;
+    else
+        le=le+1;
+        continue;
+    end
+end
+end
 ```
