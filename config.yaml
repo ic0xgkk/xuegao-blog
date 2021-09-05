@@ -1,10 +1,12 @@
+# 基础链接。调试模式无效
 baseURL: 'https://blog.xuegaogg.com/'
+# 参考文献返回文中的标记
 footnoteReturnLinkContents: ↩
-languageCode: zh-CN
 title: 雪糕博客
-description: 一位不愿意将就并且专注于网络技术的攻城狮的博客
 enableEmoji: true
+# 每页最多文章数
 paginate: 10
+# 摘要长度
 summaryLength: 100
 timeZone: Asia/Hong_Kong
 theme: ["hugo-notice", "PaperMod"]
@@ -12,22 +14,30 @@ enableInlineShortcodes: true
 buildDrafts: false
 buildFuture: false
 buildExpired: false
+# 确保可以正确统计中文字体
+hasCJKLanguage: true
 outputs:
   home:
     - HTML
     - RSS
     - JSON
 
+# 优化输出
 minify:
   disableXML: true
   minifyOutput: true
 
 params:
+  assets:
+    # 禁用主题自带的代码高亮，交给hugo内置的引擎完成
+    # 内联高亮，有助于兼容微信公众号
+    disableHLJS: true
   env: production
+  languageCode: zh-CN
   defaultTheme: auto
   AuthorName: 雪糕
   GitHubUser: ic0xgkk
-  SidebarRecentLimit: 15
+  SidebarRecentLimit: 10
   Subtitle: 一位不愿意将就并且专注于网络技术的攻城狮的博客
   ShowReadingTime: false
   displayFullLangName: true
@@ -52,10 +62,14 @@ params:
     URL: 'https://github.com/ic0xgkk/xuegao-blog/tree/main/content'
     Text: 建议修改
     appendFilePath: true
+
 markup:
   highlight:
+    # 不显示行号，不然看着很丑
     lineNos: false
-    codeFences: false
+    # 显示代码框
+    codeFences: true
+    # 开启自动推测语言
     guessSyntax: true
     style: dracula
   tableOfContents:
@@ -64,6 +78,7 @@ markup:
     startLevel: 2
   goldmark:
     renderer:
+      # 允许原生html代码直接被渲染
       unsafe: true
   fuseOpts:
     isCaseSensitive: false
