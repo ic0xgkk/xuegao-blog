@@ -6,9 +6,10 @@ categories:
 date: 2018-08-22 09:36:00+00:00
 draft: false
 title: 攒一台黑群晖
+summary: 群晖的DSM真的好用，性能也不错，扩展性也很好，但是官方也限制了只能运行在自家的硬件上。不过好在，可以通过黑来解决（笑
 ---
 
-估计很多人都用过群晖的DSM（DiskStation Manager）吧，不得不说的是，群晖的DSM NAS系统相当不错，不管是安装还是调试、维护，都很方便，而且管理选项很细致好用，性能也相当不错，扩展性也很好，唯独坑爹的一点是DSM只能运行在自家的硬件上，无法在非官方的硬件使用完整的功能，而且目前已经无法完全洗白了
+估计很多人都用过群晖的DSM（DiskStation Manager）吧，不得不说的是，群晖的DSM NAS系统相当不错，不管是安装还是调试、维护，都很方便，而且管理选项很细致好用，性能也相当不错，扩展性也很好，唯独坑爹的一点是DSM只能运行在自家的硬件上，无法在非官方的硬件使用完整的功能，而且目前已经无法完全洗白了。不过某宝似乎有卖SN/MAC，可以半洗白或者全洗
 
 ## 黑群晖or白群晖?
 
@@ -21,15 +22,15 @@ title: 攒一台黑群晖
 
 ## 需要
 
-1. synoboot或者XPEnology（用于引导、安装、维护DSM系统）
-2. PAT文件（DSM的系统包）
+1. synoboot或者XPEnology（用于引导、安装、维护DSM系统），可以在这里下载 https://xpenology.club/downloads/
+2. PAT文件（DSM的系统包），可以在这里下载 https://www.synology.com/en-global/support/download
 3. SN生成工具，以便转码。百度找找这个文件serial_generator_new.html 
 4. ChipGenius（U盘查看PID VID） 
 5. osfmount（用于在Windows上挂载多分区的img镜像） 
 6. starwindconverter（把img镜像转换为vmdk虚拟磁盘文件，虚拟机专用，非必需） 
 7. synology-assistant（DSM管理工具，推荐安装） 
 8. 得到SN算MAC工具。百度找下这个文件 Synology-mod-new.xlsm 是一个Excel表 
-9. img写入U盘工具-rufus
+9. img写入U盘工具-rufus，可以在这里下载 http://rufus.akeo.ie
 
 ## 步骤
 

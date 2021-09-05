@@ -6,6 +6,7 @@ categories:
 date: 2018-10-11 09:42:13+00:00
 draft: false
 title: C语言链表实现图书管理系统
+summary: 使用链表实现一个小的图书管理系统，有基础的增改删查功能。详细理了一下开发过程中的思路和收获
 ---
 
 使用链表实现一个小的图书管理系统，要求有基础的增改删查功能
@@ -13,7 +14,7 @@ title: C语言链表实现图书管理系统
 ## 代码存放地址
 
 代码放在了这里[^1]
-[^1]: https://github.com/ic0xgkk/School_Work/tree/master/Data_Structure/Experiment-1
+[^1]: https://github.com/ic0xgkk/SchoolWork/
 
 ## 开发环境及说明
 
@@ -38,67 +39,44 @@ Ubuntu 18 Desktop x64 + GCC 7.3.0 + Code Blocks
 以下内容引用自这里[^2]
 [^2]: https://www.gribblelab.org/CBootCamp/7_Memory_Stack_vs_Heap.html
 
-> Stack vs Heap
-> 
-> So far we have seen how to declare basic type variables such as int, double, etc, and complex types such as arrays and structs. The way we have been declaring them so far, with a syntax that is like other languages such as MATLAB, Python, etc, puts these variables on the stack in C.
-> 
-> The Stack
-> 
-> What is the stack? It's a special region of your computer's memory that stores temporary variables created by each function (including the main() function). The stack is a "LIFO" (last in, first out) data structure, that is managed and optimized by the CPU quite closely. Every time a function declares a new variable, it is "pushed" onto the stack. Then every time a function exits, all of the variables pushed onto the stack by that function, are freed (that is to say, they are deleted). Once a stack variable is freed, that region of memory becomes available for other stack variables.
-> 
-> The advantage of using the stack to store variables, is that memory is managed for you. You don't have to allocate memory by hand, or free it once you don't need it any more. What's more, because the CPU organizes stack memory so efficiently, reading from and writing to stack variables is very fast.
-> 
-> A key to understanding the stack is the notion that when a function exits, all of its variables are popped off of the stack (and hence lost forever). Thus stack variables are local in nature. This is related to a concept we saw earlier known as variable scope, or local vs global variables. A common bug in C programming is attempting to access a variable that was created on the stack inside some function, from a place in your program outside of that function (i.e. after that function has exited).
-> 
-> Another feature of the stack to keep in mind, is that there is a limit (varies with OS) on the size of variables that can be stored on the stack. This is not the case for variables allocated on the heap.
-> 
-> To summarize the stack:
-> 
-> the stack grows and shrinks as functions push and pop local variables
-> 
-> there is no need to manage the memory yourself, variables are allocated and freed automatically
-> 
-> the stack has size limits
-> 
-> stack variables only exist while the function that created them, is running
-> 
-> The Heap
-> 
-> The heap is a region of your computer's memory that is not managed automatically for you, and is not as tightly managed by the CPU. It is a more free-floating region of memory (and is larger). To allocate memory on the heap, you must use malloc() or calloc(), which are built-in C functions. Once you have allocated memory on the heap, you are responsible for using free() to deallocate that memory once you don't need it any more. If you fail to do this, your program will have what is known as a memory leak. That is, memory on the heap will still be set aside (and won't be available to other processes). As we will see in the debugging section, there is a tool called valgrind that can help you detect memory leaks.
-> 
-> Unlike the stack, the heap does not have size restrictions on variable size (apart from the obvious physical limitations of your computer). Heap memory is slightly slower to be read from and written to, because one has to use pointers to access memory on the heap. We will talk about pointers shortly.
-> 
-> Unlike the stack, variables created on the heap are accessible by any function, anywhere in your program. Heap variables are essentially global in scope.
-> 
-> Stack vs Heap Pros and Cons
-> 
-> Stack
-> 
-> very fast access
-> 
-> don't have to explicitly de-allocate variables
-> 
-> space is managed efficiently by CPU, memory will not become fragmented
-> 
-> local variables only
-> 
-> limit on stack size (OS-dependent)
-> 
-> variables cannot be resized
-> 
-> Heap
-> 
-> variables can be accessed globally
-> 
-> no limit on memory size
-> 
-> (relatively) slower access
-> 
-> no guaranteed efficient use of space, memory may become fragmented over time as blocks of memory are allocated, then freed
-> 
-> you must manage memory (you're in charge of allocating and freeing variables)
-> 
-> variables can be resized using realloc()
+```text
+Stack vs Heap
+So far we have seen how to declare basic type variables such as int, double, etc, and complex types such as arrays and structs. The way we have been declaring them so far, with a syntax that is like other languages such as MATLAB, Python, etc, puts these variables on the stack in C.
+
+The Stack
+What is the stack? It's a special region of your computer's memory that stores temporary variables created by each function (including the main() function). The stack is a "LIFO" (last in, first out) data structure, that is managed and optimized by the CPU quite closely. Every time a function declares a new variable, it is "pushed" onto the stack. Then every time a function exits, all of the variables pushed onto the stack by that function, are freed (that is to say, they are deleted). Once a stack variable is freed, that region of memory becomes available for other stack variables.
+The advantage of using the stack to store variables, is that memory is managed for you. You don't have to allocate memory by hand, or free it once you don't need it any more. What's more, because the CPU organizes stack memory so efficiently, reading from and writing to stack variables is very fast.
+A key to understanding the stack is the notion that when a function exits, all of its variables are popped off of the stack (and hence lost forever). Thus stack variables are local in nature. This is related to a concept we saw earlier known as variable scope, or local vs global variables. A common bug in C programming is attempting to access a variable that was created on the stack inside some function, from a place in your program outside of that function (i.e. after that function has exited).
+Another feature of the stack to keep in mind, is that there is a limit (varies with OS) on the size of variables that can be stored on the stack. This is not the case for variables allocated on the heap.
+To summarize the stack:
+the stack grows and shrinks as functions push and pop local variables
+there is no need to manage the memory yourself, variables are allocated and freed automatically
+the stack has size limits
+stack variables only exist while the function that created them, is running
+
+The Heap
+The heap is a region of your computer's memory that is not managed automatically for you, and is not as tightly managed by the CPU. It is a more free-floating region of memory (and is larger). To allocate memory on the heap, you must use malloc() or calloc(), which are built-in C functions. Once you have allocated memory on the heap, you are responsible for using free() to deallocate that memory once you don't need it any more. If you fail to do this, your program will have what is known as a memory leak. That is, memory on the heap will still be set aside (and won't be available to other processes). As we will see in the debugging section, there is a tool called valgrind that can help you detect memory leaks.
+Unlike the stack, the heap does not have size restrictions on variable size (apart from the obvious physical limitations of your computer). Heap memory is slightly slower to be read from and written to, because one has to use pointers to access memory on the heap. We will talk about pointers shortly.
+Unlike the stack, variables created on the heap are accessible by any function, anywhere in your program. Heap variables are essentially global in scope.
+
+Stack vs Heap Pros and Cons
+
+Stack
+very fast access
+don't have to explicitly de-allocate variables
+space is managed efficiently by CPU, memory will not become fragmented
+local variables only
+limit on stack size (OS-dependent)
+variables cannot be resized
+
+Heap
+variables can be accessed globally
+no limit on memory size
+(relatively) slower access
+no guaranteed efficient use of space, memory may become fragmented over time as blocks of memory are allocated, then freed
+you must manage memory (you're in charge of allocating and freeing variables)
+variables can be resized using realloc()
+```
 
 综上我们可以看到，常规的像**int，double，struct**等数据类型都是在Stack（栈区），变量由固定函数分配内存空间并且在内存中长度固定，这就使得能够实现LIFO队列进而使得操作更加简单，函数结束后分配的内存会被自动释放，运行速度也很快；缺点是无法手工分配内存并且内存使用有大小限制，变量在函数结束会被释放，因此只能在当前函数内使用
 
@@ -145,7 +123,7 @@ The free() function returns no value.
 The realloc() function returns a pointer to the newly allocated memory, which is suitably aligned for any kind of variable and may be different from ptr, or NULL if the request fails. If size was equal to 0, either NULL or a pointer suitable to be passed to free() is returned. If realloc() fails the original block is left untouched; it is not freed or moved.
 
 Conforming To
-C89, C99.</stdlib.h>
+C89, C99.
 ```
 
 
@@ -178,7 +156,7 @@ DESCRIPTION
        optimizations will not remove the erase operation if the compiler
        deduces that the operation is "unnecessary".
 RETURN VALUE     
-       None.</string.h></strings.h>
+       None.
 ```
 
 
@@ -196,7 +174,7 @@ The memset() function fills the first n bytes of the memory area pointed to by s
 Return Value
 The memset() function returns a pointer to the memory area s.
 Conforming to
-SVr4, 4.3BSD, C89, C99, POSIX.1-2001.</string.h>
+SVr4, 4.3BSD, C89, C99, POSIX.1-2001.
 ```
 
 
@@ -231,12 +209,12 @@ struct Books *head=NULL;
 
 
 ```c
-head-&gt;next=data;
-data-&gt;ISBN=isbn;
-strcpy( data-&gt;BookName, bookname );
-data-&gt;PRICE=price;
+head->next=data;
+data->ISBN=isbn;
+strcpy( data->BookName, bookname );
+data->PRICE=price;
 head=data;
-head-&gt;next=NULL;
+head->next=NULL;
 ```
 
 
@@ -258,11 +236,11 @@ f=fopen("book.txt","r");
         char bookname[128];
         memset(tmp, 0, sizeof(tmp));
         fgets(tmp, sizeof(tmp)-1, f); // 包含了换行符
-        if( strlen(tmp) &lt; 14 ) //　此处手动感谢TUNA成员帮我查出了读入空行的bug
+        if( strlen(tmp) < 14 ) //　此处手动感谢TUNA成员帮我查出了读入空行的bug
         {
             break;
         }
-        sscanf(tmp, "%lu%s%u\n",&amp;isbn, bookname, &amp;price);
+        sscanf(tmp, "%lu%s%u\n",&isbn, bookname, &price);
         insert_b(isbn,bookname,price); //插入函数，请看下边
     }
     finished_loading=true;
@@ -288,17 +266,17 @@ void insert_b(uint64_t isbn, char bookname[], uint32_t price)
         exit(-1);
     }
 
-    if(head==backup_header &amp;&amp; finished_loading==true)
+    if(head==backup_header && finished_loading==true)
     {
         while(1)
         {
-            if(head-&gt;next==NULL)
+            if(head->next==NULL)
             {
                 break;
             }
             else
             {
-                head=head-&gt;next;
+                head=head->next;
                 continue;
             }
         }
@@ -307,20 +285,19 @@ void insert_b(uint64_t isbn, char bookname[], uint32_t price)
     if(head==NULL)
         head=data;
 
-    if(backup_header==NULL &amp;&amp; finished_loading==false)
+    if(backup_header==NULL && finished_loading==false)
     {
         backup_header=head;
     }
 
-    head-&gt;next=data;
-    data-&gt;ISBN=isbn;
-    strcpy( data-&gt;BookName, bookname );
-    data-&gt;PRICE=price;
+    head->next=data;
+    data->ISBN=isbn;
+    strcpy( data->BookName, bookname );
+    data->PRICE=price;
     head=data;
-    head-&gt;next=NULL;
+    head->next=NULL;
 }
 ```
-
 
 此处传入了三个参数为书目的基本信息，此处插入操作我们将会把书目信息插入到链表中去，一步一步来看：
 
@@ -342,19 +319,19 @@ void search_b(void)
     printf("Search Mode:\n");
     printf("Input ISBN:");
     uint64_t isbn;
-    scanf("%lu", &amp;isbn);
+    scanf("%lu", &isbn);
 
     while(1)
     {
-        if(head-&gt;next==NULL)
+        if(head->next==NULL)
         {
-            if(isbn==head-&gt;ISBN)
+            if(isbn==head->ISBN)
             {
                 printf("Found!!!\n");
                 printf("ISBN\t\tBookName\t\tPrice\n");
-                printf("%lu\t\t%s\t\t%u\n\n",head-&gt;ISBN,head-&gt;BookName,head-&gt;PRICE);
+                printf("%lu\t\t%s\t\t%u\n\n",head->ISBN,head->BookName,head->PRICE);
                 found=true;
-                head=head-&gt;next;
+                head=head->next;
                 break;
             }
             printf("Stopping traversing...\n");
@@ -366,18 +343,18 @@ void search_b(void)
         }
         else
         {
-            if(isbn==head-&gt;ISBN)
+            if(isbn==head->ISBN)
             {
                 printf("Found!!!\n");
                 printf("ISBN\t\tBookName\t\tPrice\n");
-                printf("%lu\t\t%s\t\t%u\n\n",head-&gt;ISBN,head-&gt;BookName,head-&gt;PRICE);
+                printf("%lu\t\t%s\t\t%u\n\n",head->ISBN,head->BookName,head->PRICE);
                 found=true;
-                head=head-&gt;next;
+                head=head->next;
                 break;
             }
             else
             {
-                head=head-&gt;next;
+                head=head->next;
                 continue;
             }
         }
@@ -390,16 +367,16 @@ void print_all(void)
     printf("ISBN\t\tBookName\t\tPrice\n");
     while(1)
     {
-        if(head-&gt;next==NULL)
+        if(head->next==NULL)
         {
-            printf("%lu\t%-2s\t\t%6u\n",head-&gt;ISBN,head-&gt;BookName,head-&gt;PRICE);
+            printf("%lu\t%-2s\t\t%6u\n",head->ISBN,head->BookName,head->PRICE);
             printf("Stopping traversing...\n");
             break;
         }
         else
         {
-            printf("%lu\t%-2s\t\t%6u\n",head-&gt;ISBN,head-&gt;BookName,head-&gt;PRICE);
-            head=head-&gt;next;
+            printf("%lu\t%-2s\t\t%6u\n",head->ISBN,head->BookName,head->PRICE);
+            head=head->next;
         }
     }
 }
@@ -417,34 +394,34 @@ void delete_b(void)
     uint64_t isbn=0;
     bool exist=false;
     printf("Input ISBN:");
-    scanf("%lu",&amp;isbn);
+    scanf("%lu",&isbn);
 
     while(1)
     {
-        if(head-&gt;ISBN==isbn)
+        if(head->ISBN==isbn)
         {
             void *tmp=head;
-            head=head-&gt;next;
+            head=head->next;
             free(tmp);
             exist=true;
             backup_header=head;
             break;
         }
-        if(head-&gt;next-&gt;ISBN==isbn)
+        if(head->next->ISBN==isbn)
         {
-            void *tmp=head-&gt;next-&gt;next;
-            free(head-&gt;next);
-            head-&gt;next=tmp;
+            void *tmp=head->next->next;
+            free(head->next);
+            head->next=tmp;
             exist=true;
             break;
         }
         else
         {
-            if(head-&gt;next==NULL)
+            if(head->next==NULL)
             {
                 break;
             }
-            head=head-&gt;next;
+            head=head->next;
         }
     }
 
@@ -481,7 +458,7 @@ void write_file(void)
     head=backup_header;
     while(1)
     {
-        if(head-&gt;next==NULL)
+        if(head->next==NULL)
         {
             num++;
             break;
@@ -489,7 +466,7 @@ void write_file(void)
         else
         {
             num++;
-            head=head-&gt;next;
+            head=head->next;
         }
     }
     head=backup_header;
@@ -501,11 +478,11 @@ void write_file(void)
     bzero(tmp, sizeof(struct Books));
     while(1)
     {
-        if(head-&gt;next==NULL)
+        if(head->next==NULL)
         {
             bzero(tmp, sizeof(struct Books));
 
-            snprintf(tmp, sizeof(struct Books), "%lu %s %u\n",head-&gt;ISBN, head-&gt;BookName, head-&gt;PRICE);
+            snprintf(tmp, sizeof(struct Books), "%lu %s %u\n",head->ISBN, head->BookName, head->PRICE);
             strcat(fls, tmp);
 
             break;
@@ -514,10 +491,10 @@ void write_file(void)
         {
             bzero(tmp, sizeof(struct Books));
 
-            snprintf(tmp, sizeof(struct Books), "%lu %s %u\n",head-&gt;ISBN, head-&gt;BookName, head-&gt;PRICE);
+            snprintf(tmp, sizeof(struct Books), "%lu %s %u\n",head->ISBN, head->BookName, head->PRICE);
             strcat(fls, tmp);
 
-            head=head-&gt;next;
+            head=head->next;
             continue;
         }
     }

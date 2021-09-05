@@ -6,6 +6,7 @@ categories:
 date: 2018-06-11 09:20:48+00:00
 draft: false
 title: VMware ESXi 硬盘RDM直通
+summary: ESXi把逻辑硬盘直接直通到虚拟机中，不再划分虚拟磁盘。适用于NAS等场景
 ---
 
 有时候很尴尬需要把整个物理硬盘都给虚拟机使用，就好比NAS系统，好在ESXi提供了RDM直通功能，可以按照以下办法实现
