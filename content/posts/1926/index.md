@@ -4,6 +4,7 @@ date: 2021-08-31T21:10:21+08:00
 draft: false
 categories:
   - Kubernetes
+summary: "摘要"
 ---
 
 {{< notice tip >}}
