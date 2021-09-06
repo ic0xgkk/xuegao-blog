@@ -33,6 +33,7 @@ params:
     # 内联高亮，有助于兼容微信公众号
     disableHLJS: true
   env: production
+  comments: true
   languageCode: zh-CN
   defaultTheme: auto
   AuthorName: 雪糕
