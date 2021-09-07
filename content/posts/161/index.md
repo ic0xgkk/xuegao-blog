@@ -97,9 +97,9 @@ title: 移花接木——利用隧道技术为局域网客户端分配日本IPv6
 > 
 > RFC4816, pp.75
 
-**所谓的Target Address范围：**前往某个目的地址的数据包的后续的数据包发送的地址（？？？？为啥我愣是没明白这句话什么意思）。如果target是一个路由器，这个路由器的link-local地址将会被使用；如果是一个主机，target地址将会和destination相同
+**所谓的Target Address范围：** 前往某个目的地址的数据包的后续的数据包发送的地址（？？？？为啥我愣是没明白这句话什么意思）。如果target是一个路由器，这个路由器的link-local地址将会被使用；如果是一个主机，target地址将会和destination相同
 
-**所谓的Destination Address范围：**调用这个IP数据包的目标地址（？？？？我晚点再研究一下这两个名词）
+**所谓的Destination Address范围：** 调用这个IP数据包的目标地址（？？？？我晚点再研究一下这两个名词）
 
 静态路由需要使用link-local地址配置，动态路由会通过一些特定方式交换邻居间link-local地址。同时，之所以使用link-local地址是因为要确保临间的重定向消息(ICMPv6)能够正常工作。因此路由配置只需要使用临间接口的link-local地址即可，而不必再像IPv4那样苦苦计算子网地址。
 

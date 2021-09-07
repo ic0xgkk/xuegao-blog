@@ -81,7 +81,7 @@ Listen Protocol = IPv4 + UDP
 Listen Port = 53
 Operation Mode = Private
 IPFilter Type = Deny
-IPFilter Level &lt; 0
+IPFilter Level < 0
 Accept Type = 
 
 [DNS]

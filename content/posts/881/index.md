@@ -2,7 +2,7 @@
 aliases:
 - /archives/881
 categories:
-- CDN
+- 建站
 date: 2020-02-13 06:36:04+00:00
 draft: false
 title: WordPress全站优化指南
@@ -10,15 +10,13 @@ title: WordPress全站优化指南
 
 众所周知，WordPress以庞大和臃肿著称，如何提高用户访问体验一直以来是一个问题。本篇文章结合本站的优化方式进行了探讨
 
-
-
 **注意：此优化方式仅在本站进行了有限测试，实际部署请根据实际情况进行调整。**
 
 
 
 ## 服务端优化
 
-可以看这篇：<https: 851.html="" archives="" blog.xuegaogg.com="">
+可以看这篇：https://blog.xuegaogg.com/archives/851.html
 
 ## 源站基础设施优化
 
@@ -28,29 +26,20 @@ title: WordPress全站优化指南
 
 我买了Starter Shared一年期，47.40美金的价钱真的是完全能够去Vultr租一年VPS了，建议有运维能力的还是自己租服务器吧。这家的服务器有多烂呢，这都2020年了，来看看人家的服务器
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图1. cat /proc/cpuinfo](./image-9.png)
-<figcaption>图1. cat /proc/cpuinfo</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图2. ip addr show的一部分](./image-10.png)
-<figcaption>图2. ip addr show的一部分</figcaption></figure>
-</div>
+![图1](./image-9.png)
+图1. cat /proc/cpuinfo
+
+![图2](./image-10.png)
+图2. ip addr show的一部分
 
 从上边我们知道了这台服务器共8个核心，查了一下应该是两颗U。那么8个物理核，负载有多高呢？
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图3. 负载](./image-11.png)
-<figcaption>图3. 负载</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图4. top](./image-12.png)
-<figcaption>图4. top</figcaption></figure>
-</div>
+
+![图3](./image-11.png)
+图3. 负载
+
+![图4](./image-12.png)
+图4. top
 
 我专程对比了网站的DNS记录的IP和上边的接口中的IP，确认了就是在这台服务器上。好端端一个8核的机器承受了它不该有的重担…当然满载不是常态，我唯独能说的，是这家服务商对计算资源利用得还挺好……
 
@@ -62,20 +51,15 @@ title: WordPress全站优化指南
 
 所以我换Vultr了。一个月6美金的高主频VPS（频率3792.000MHz，二级缓存16384 KB，Bogomips:7584.00），数据中心位于日本东京，1G的内存+1T的流量，32G的NVME存储，实际使用了几天感觉还是挺香的。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
 ![图5. Vultr 6美刀CPU](./image-13.png)
-<figcaption>图5. Vultr 6美刀CPU</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
+图5. Vultr 6美刀CPU
+
 ![图6. Vultr 6美刀内存和负载](./image-14.png)
-<figcaption>图6. Vultr 6美刀内存和负载</figcaption></figure>
-</div>
+图6. Vultr 6美刀内存和负载
 
 除了内存小了一点，其他都是还不错的，服务器上软件稍微调教一下还是能利用好这算力的。
 
-感兴趣的可以Vultr看看：<https: ?ref="6848239" www.vultr.com=""> ，顺便帮我拉点返利吧
+感兴趣的可以Vultr看看：https://www.vultr.com/?ref=6848239 ，顺便帮我搞点流量钱吧（笑
 
 ## 边缘访问优化
 
@@ -89,7 +73,7 @@ title: WordPress全站优化指南
 
 ### 加速DNS查询
 
-可以参考这里： <https: dns-providers-list="" www.dnsperf.com=""></https:> 
+可以参考这里： https://www.dnsperf.com/dns-providers-list/
 
 其实我的域名也是想托管到Cloudflare去的，但是迁移完记录之后想起来，我还有一些依赖DNS API的服务…所以只能购买了阿里云的DNS解析企业版，这东西提供了更多的DNS查询质量保障，不过实测好像并没有多大提升。建议一开始能用Cloudflare就别用阿里云了
 
@@ -149,28 +133,21 @@ Lazy load能减少CDN的流量开销，避免全站一口气出图，不仅能�
 
 经过连续几天的迁移和优化后，全站的加载速度已经到达了比较理想的地步，虽然不及百度和淘宝的加载速度，但是也相对之前有了很大提升。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图7. 优化后全站的加载速度](./image-15.png)
-<figcaption>图7. 优化后全站的加载速度</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图8. CSDN全站加载速度](./image-16.png)
-<figcaption>图8. CSDN全站加载速度</figcaption></figure>
-</div>
+
+![图7](./image-15.png)
+图7. 优化后全站的加载速度
+
+![图8](./image-16.png)
+图8. CSDN全站加载速度
 
 如上两个图可以看到，第一个动态元素的加载延迟基本和CSDN的平齐，即便差也不会差太大，但是全站元素少因此比CSDN更快得完成了加载（600ms不到）。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图9. html响应头](./image-17.png)
-<figcaption>图9. html响应头</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图10. css响应头](./image-18.png)
-<figcaption>图10. css响应头</figcaption></figure>
-</div>
 
-从上图9和10可以看到，阿里云全站加速对于动态资源的缓存并不是在边缘，如果将伪静态元素通过静态加速的方式，尽管短时（缓存命中的情况下）可以获得非常好的访问质量，但是未命中的情况下可能会比较糟糕。如图10的css元素，归属静态资源直接命中了边缘节点的缓存，因此22ms完成了加载，而图9中的伪静态元素由于配置为动态资源并部署了缓存，缓存并没有在边缘而在日本节点，因此取回存在了一定的延迟，但是仍然在可接受范围内。</https:></https:>
+![图9](./image-17.png)
+图9. html响应头
+
+![图10. css响应头](./image-18.png)
+图10. css响应头
+
+从上图9和10可以看到，阿里云全站加速对于动态资源的缓存并不是在边缘，如果将伪静态元素通过静态加速的方式，尽管短时（缓存命中的情况下）可以获得非常好的访问质量，但是未命中的情况下可能会比较糟糕。如图10的css元素，归属静态资源直接命中了边缘节点的缓存，因此22ms完成了加载，而图9中的伪静态元素由于配置为动态资源并部署了缓存，缓存并没有在边缘而在日本节点，因此取回存在了一定的延迟，但是仍然在可接受范围内。
+

@@ -8,22 +8,19 @@ draft: false
 title: 手搓zabbix
 ---
 
-
-
 ## 前言
 
 按照官方文档使用CentOS8的源安装失败，原因是缺少合适的libssh2依赖，无奈只能手搓了。
 
 ## 过程
 
-官方文档： <https: current="" documentation="" install="" installation="" manual="" www.zabbix.com=""> 
+官方文档： https://www.zabbix.com/documentation/current/manual/installation/install
 
 我就不解释了直接贴关键命令了
 
 
 
-```
-
+```bash
 ./configure --prefix=/usr/local/zabbix  --enable-server --enable-agent --with-mysql=/usr/local/mariadb/bin/mysql_config --with-libcurl --with-libxml2
 
 make 
@@ -32,7 +29,6 @@ groupadd --system zabbix
 useradd --system -g zabbix -d /usr/local/zabbix/lib -s /sbin/nologin -c "Zabbix Monitoring System" zabbix
 
 make install
-
 ```
 
 
@@ -41,8 +37,7 @@ make install
 
 
 
-```
-
+```bash
 # cat /etc/systemd/system/zabbix-server.service
 [Unit]
 Description=Zabbix Server
@@ -58,14 +53,12 @@ RestartSec=20
 
 [Install]
 WantedBy=multi-user.target
-
 ```
 
 
 
 
-```
-
+```bash
 # cat /etc/systemd/system/zabbix-agentd.service
 [Unit]
 Description=Zabbix Agentd
@@ -81,11 +74,10 @@ RestartSec=20
 
 [Install]
 WantedBy=multi-user.target
-
 ```
 
 
 
 怎么用就不多说了，相信搞运维的都会的
 
-配置文件也不多说了，按着配置文件上的英文提示改就行了。</https:>
+配置文件也不多说了，按着配置文件上的英文提示改就行了。

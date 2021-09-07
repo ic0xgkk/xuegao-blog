@@ -89,13 +89,13 @@ vim /usr/lib/rabbitmq/lib/rabbitmq_server-3.7.18/sbin/rabbitmq-env
 在打开的文件中，定位到第148和151行附近（我是依靠修改过的来找的，未修改的可能有几行差异，需要自行对比下方图1）。修改内容如下图1，删除**RABBITMQ_NAME_TYPE**下方的一个语句（共两处，我已经删除了）。然后将NODENAME的@后手动修改为主机名，即在**/etc/hostname**文件中。当修改完此处后，rabbitmq-env执行就不会报没有权限了，连带rabbitmqctl也可以正常使用
 
 
-![图1. 改动](./image.png)
+![图1](./image.png)
 图1. 改动
 
 如下图2，可以看到正常执行了
 
 
-![图2. 正常执行](./image-1.png)
+![图2](./image-1.png)
 图2. 正常执行
 
 紧接着，再使用如下命令打开WebUI即可
@@ -109,7 +109,7 @@ rabbitmq-plugins enable rabbitmq_management
 然后添加全局管理员，并给其权限，如下图3
 
 
-![图3. 添加用户并分配权限](./image-2.png)
+![图3](./image-2.png)
 图3. 添加用户并分配权限
 
 命令如下，administrator即用户类型，按需给即可
@@ -124,7 +124,7 @@ rabbitmqctl set_user_tags <username> administrator
 然后登录WebUI默认的管理端口为15672，即可看到如下图4的内容
 
 
-![图4. WebUI](./image-3.png)
+![图4](./image-3.png)
 图4. WebUI
 
 此时，新建的用户还没有默认Virtual Host /的访问权限，因此还需要将用户分配该Virtual Host的访问权限，如下命令即可

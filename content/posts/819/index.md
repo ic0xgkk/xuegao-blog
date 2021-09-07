@@ -2,58 +2,46 @@
 aliases:
 - /archives/819
 categories:
-- CDN
+- 建站
 date: 2020-02-09 07:46:33+00:00
 draft: false
 title: CDN配置一把梭
 ---
 
-我的博客莫名其妙出现了一些问题，例如URL后多加”/”就会直接301跳转回源站域名访问，包含画廊也同样有这个问题。经过一夜的问题排查和Google，确认了问题在CDN上，同时针对CDN的规则设置等本文做出了更详细的解释。
-
-
+我的博客莫名其妙出现了一些问题，例如URL后多加`/`就会直接301跳转回源站域名访问，包含画廊也同样有这个问题。经过一夜的问题排查和Google，确认了问题在CDN上，同时针对CDN的规则设置等本文做出了更详细的解释。
 
 在本文开始之前，我们先对CDN的原理和虚拟主机原理进行一番探讨。
-
-
 
 ## CDN
 
 ### 什么是CDN
-<blockquote class="wp-block-quote">
-<p>
-    A content delivery network (CDN) refers to a geographically distributed group of servers which work together to provide fast delivery of Internet content.
-  </p>
-<p>
-    A CDN allows for the quick transfer of assets needed for loading Internet content including HTML pages, javascript files, stylesheets, images, and videos. The popularity of CDN services continues to grow, and today the majority of web traffic is served through CDNs, including traffic from major sites like Facebook, Netflix, and Amazon.
-  </p>
-<p>
-    A properly configured CDN may also help protect websites against some common malicious attacks, such as Distributed Denial of Service (DDOS) attacks.
-  </p>
-<cite>What Is a CDN? – Cloudflare <a href="https://www.cloudflare.com/learning/cdn/what-is-a-cdn/">https://www.cloudflare.com/learning/cdn/what-is-a-cdn/</a> </cite>
-</blockquote>
+> A content delivery network (CDN) refers to a geographically distributed group of servers which work together to provide fast delivery of Internet content.
+> 
+> A CDN allows for the quick transfer of assets needed for loading Internet content including HTML pages, javascript files, stylesheets, images, and videos. The popularity of CDN services continues to grow, and today the majority of web traffic is served through CDNs, including traffic from major sites like Facebook, Netflix, and Amazon.
+> 
+> A properly configured CDN may also help protect websites against some common malicious attacks, such as Distributed Denial of Service (DDOS) attacks.
+> 
+> What Is a CDN? – Cloudflare https://www.cloudflare.com/learning/cdn/what-is-a-cdn/
 
 CDN，content delivery network，内容分发网络。
 
 CDN依靠众多的节点共同为网站提供更快的交付速度，同时由于CDN存在于互联网的边界，依靠众多的节点为最近所能覆盖的互联网用户提供资源。CDN一般用于加速静态资源，好比html、js、css和视频音频等资源，动态资源一般会回源加载，通过这样一个方式来提升全站加载速度，减少源站压力，再加上CDN是分布式的，因此天生具有抵抗DDoS的能力，好一点的CDN甚至能抵抗TB级别的DDoS，也就是我们常说的高防。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large is-resized">
-![图1. CDN系统整体架构](./image.png)
-<figcaption>图1. CDN系统整体架构<br/>图片来源：<a href="https://www.cloudflare.com/learning/cdn/what-is-a-cdn/">https://www.cloudflare.com/learning/cdn/what-is-a-cdn/</a> </figcaption></figure>
-</div>
+> ![图1](./image.png)
+> 
+> 图1. CDN系统整体架构
+> 
+> 图片来源：https://www.cloudflare.com/learning/cdn/what-is-a-cdn/
 
 CDN系统的整体架构如上图1所示，源服务器（Origin Server）在美国，如果不使用CDN的情况下，在较远地区的访客（比如亚洲）直接访问源站可能需要较长时间。
 
 此处我拿我的博客举个例子，博主我的博客托管在DreamHost，服务器在美国。如果亚洲的访客直接访问远在美国的服务器，即便墙不存在，也要等待较长的时间。那么在墙存在的情况下，几乎是慢到了无法理喻的地步。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图2. 页面元素类型](./image-1.png)
-<figcaption>图2. 页面元素类型</figcaption></figure>
-</div><figure class="wp-block-image size-large">
+![图2](./image-1.png)
+图2. 页面元素类型
 
 ![图片](./image-2.png)
- <figcaption>图3. CDN缓存规则</figcaption></figure> 
+图3. CDN缓存规则
 
 我随便打开一篇文章，我们可以看到整个页面的元素有如上图2这些，由于我设置的CDN缓存规则（图3）只缓存了bmp,css,gif,ico,jpeg,jpg,js,png,svg,tiff,woff2这些扩展名的文件，因此可以看到图2中整个加载时长中，只有528花费了2.54秒加载（第一个528是http向https的跳转，CDN响应），剩下的元素缓存都命中了，因此加载时间大幅缩短。在这种情况下，只有528没有被缓存直接回源请求，其他的全部从CDN加载缓存，因为528没有被设置缓存规则，因此也不会被缓存，因此作为动态资源的528就不会收到CDN的影响，动态的内容可以实时呈现但静态资源能够被CDN加速。
 
@@ -68,71 +56,48 @@ CDN系统的整体架构如上图1所示，源服务器（Origin Server）在美
 此处我只捡几个对我来说比较重要的参数去说，其他的还需要自己去查资料。
 
 #### 回源HOST
-<blockquote class="wp-block-quote">
-<p>
-    A client MUST include a Host header field in all HTTP/1.1 request messages . If the requested URI does not include an Internet host name for the service being requested, then the Host header field MUST be given with an empty value. An HTTP/1.1 proxy MUST ensure that any request message it forwards does contain an appropriate Host header field that identifies the service being requested by the proxy. All Internet-based HTTP/1.1 servers MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message which lacks a Host header field.
-  </p>
-<cite><a href="https://tools.ietf.org/html/rfc2616">RFC 2616</a> </cite>
-</blockquote>
+> A client MUST include a Host header field in all HTTP/1.1 request messages . If the requested URI does not include an Internet host name for the service being requested, then the Host header field MUST be given with an empty value. An HTTP/1.1 proxy MUST ensure that any request message it forwards does contain an appropriate Host header field that identifies the service being requested by the proxy. All Internet-based HTTP/1.1 servers MUST respond with a 400 (Bad Request) status code to any HTTP/1.1 request message which lacks a Host header field.> 
+> 
+> RFC 2616
 
 在RFC2616中，规定了HTTP 1.1必须携带Host这个头，除非请求的URI中不包含网络域名，这个Host才允许为空。只有包含Host这个字段的，在经过代理时才能够被服务器正常转发，否则将会返回400错误。
 
 此处，我使用Postman来进行一番测试
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图4. 测试1](./image-3.png)
-<figcaption>图4. 测试1</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图5. 测试2](./image-4.png)
-<figcaption>图5. 测试2</figcaption></figure>
-</div>
+![图4](./image-3.png)
+图4. 测试1
+
+![图5](./image-4.png)
+图5. 测试2
 
 上述图4和图5，GET请求的URI都为https://www.google.com.hk/，同时Header中所带的参数一致（暂且不说Postman-token），两张图的差别就在于Host不同。我们可以看到，图4中，Host保持默认为www.google.com.hk，因此得到了Google的主页（不含样式），图5中，我修改Host为www.qq.com，因此得到了腾讯的首页。
 
 起初我以为Host必须是托管在该服务商的域名才能够被CDN所代理，但是我将Host改为blog.xuegaogg.com后，发现仍然能正常打开。在这种情况下我又尝试使用无CDN的站点做测试，发现仍然能够打开，所以目前看起来Google的CDN策略是Host只是作为回源的依据，不会对Host是否被托管进行判断，只要域名可达会直接依据Host进行代理。这个我也只是猜测，还有待考证
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图6. 测试3](./image-5.png)
-<figcaption>图6. 测试3</figcaption></figure>
-</div><figure class="wp-block-image size-large">
+![图6](./image-5.png)
+图6. 测试3
 
 ![图片](./image-6.png)
- <figcaption>图7. 测试4</figcaption></figure> 
+图7. 测试4
 
 紧接着，我将GET后的URI改成了https://www.baidu.com，如图6和7中的结果。百度的CDN有对Host进行判断，因此存在了当我修改Host直接不响应的情况。我使用阿里云的CDN同样进行了一遍测试，和百度CDN一样的结果，这个结果还是比较符合常规逻辑的，至于Google的做法我有点迷。
 
 从上边的测试我们可以知道，Host这个字段是CDN进行转发和代理的依据，它决定了你所访问的实际的目标。在知道了CDN判断目标的依据后，我们还要了解一个东西叫做——虚拟主机（VirtualHost）。
 
-<blockquote class="wp-block-quote">
-<p>
-    The term Virtual Host refers to the practice of running more than one web site (such as 
-```
-company1.example.com
-```
- and 
-```
-company2.example.com
-```
-) on a single machine. Virtual hosts can be “<a href="https://httpd.apache.org/docs/2.4/vhosts/ip-based.html">IP-based</a>“, meaning that you have a different IP address for every web site, or “<a href="https://httpd.apache.org/docs/2.4/vhosts/name-based.html">name-based</a>“, meaning that you have multiple names running on each IP address. The fact that they are running on the same physical server is not apparent to the end user.
-  </p>
-<p>
-    Apache was one of the first servers to support IP-based virtual hosts right out of the box. Versions 1.1 and later of Apache support both IP-based and name-based virtual hosts (vhosts). The latter variant of virtual hosts is sometimes also called <em>host-based</em> or <em>non-IP virtual hosts</em>.
-  </p>
-<cite> <a href="https://httpd.apache.org/docs/2.4/vhosts/">https://httpd.apache.org/docs/2.4/vhosts/</a> </cite>
-</blockquote>
+> The term Virtual Host refers to the practice of running more than one web site (such as  `company1.example.com` and `company2.example.com`) on a single machine. Virtual hosts can be “IP-based“, meaning that you have a different IP address for every web site, or “name-based“, meaning that you have multiple names running on each IP address. The fact that they are running on the same physical server is not apparent to the end user.
+> 
+> Apache was one of the first servers to support IP-based virtual hosts right out of the box. Versions 1.1 and later of Apache support both IP-based and name-based virtual hosts (vhosts). The latter variant of virtual hosts is sometimes also called <em>host-based</em> or <em>non-IP virtual hosts</em>.
+> 
+> https://httpd.apache.org/docs/2.4/vhosts/
 
 通过虚拟主机这样的方法可以让多个网站托管在同一个物理服务器上。而如何在众多的托管的网站中选出真正的目标，这个即依靠Host来实现查找。但是我仍然没搞明白CDN的工作原理差异，即为什么百度和Google的CDN对于Host字段的使用方式不一，这个后边在继续查阅资料研究吧。
 
 ### 相关资料
 
-  * <https: 11="" 2011="" 29="" blog="" how-content-delivery-networks-cdns-work="" humanwhocodes.com=""></https:> 
-  * <https: cdn="" learning="" what-is-a-cdn="" www.cloudflare.com=""></https:> 
-  * <https: 2.4="" docs="" httpd.apache.org="" vhosts=""></https:> 
-  * <https: community="" http-1-1-vs-http-2-what-s-the-difference="" tutorials="" www.digitalocean.com=""> 
+* https://humanwhocodes.com/blog/2011/11/29/how-content-delivery-networks-cdns-work/
+* https://www.cloudflare.com/learning/cdn/what-is-a-cdn/
+* https://httpd.apache.org/docs/2.4/vhosts/
+* https://www.digitalocean.com/community/tutorials/http-1-1-vs-http-2-what-s-the-difference
 
 ## 本站如何设置
 
@@ -209,6 +174,12 @@ company2.example.com
 </tr>
 </table></figure> 
 
+| 地址 | 类型 | 过期时间 | 权重 |
+| ---- | ---- | ---- | ---- |
+| bmp,css,gif,ico,jpeg,jpg,js,png,svg,tiff,woff2 | 文件后缀名 | 2年 | 99 |
+| html | 文件后缀名 | 10分钟 | 50 |
+
+
 其中，权重数字越大，优先级越高，优先生效
 
 ### 安全相关
@@ -220,7 +191,6 @@ company2.example.com
 
 
 ```
-
 # BEGIN WordPress
 # 在`BEGIN WordPress`与`END WordPress`之间的指令（行）是
 # 动态生成的，只应被WordPress过滤器修改。
@@ -230,7 +200,7 @@ company2.example.com
 
 
 # 雪糕修改的
-<ifmodule mod_rewrite.c="">
+<IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
 
@@ -243,7 +213,7 @@ RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.php [L]
-</ifmodule>
+</IfModule>
 ```
 
 
@@ -260,4 +230,4 @@ RewriteRule . /index.php [L]
 
 **但是一定不要忘了在重新配置固定链接后修改.htaccess！否则刚刚配置的CDN安全规则就失效了**
 
-但是我忘了缓存会把评论一起缓存了，因此我又把伪静态的缓存关掉了。</https:>
+但是我忘了缓存会把评论一起缓存了，因此我又把伪静态的缓存关掉了。

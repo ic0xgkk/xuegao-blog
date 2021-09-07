@@ -41,12 +41,13 @@ make[6]: Leaving directory '/home/xuegao/data/openwrt/18061/build_dir/target-x86
 
 # protobuf
 
-编译ocserv(openConnect服务端)时需要该依赖，出错误，Google了一下
+编译ocserv(openConnect服务端)时需要该依赖，出错误，Google了一下[^2]
 
 > Google Protocol Buffer( 简称 Protobuf) 是 Google 公司内部的混合语言数据标准，目前已经正在使用的有超过 48,162 种报文格式定义和超过 12,183 个 .proto 文件。他们用于 RPC 系统和持续数据存储系统。
 > 
 > Protocol Buffers 是一种轻便高效的结构化数据存储格式，可以用于结构化数据串行化，或者说序列化。它很适合做数据存储或 RPC 数据交换格式。可用于通讯协议、数据存储等领域的语言无关、平台无关、可扩展的序列化结构数据格式。目前提供了 C++、Java、Python 三种语言的 API
 
+[^2]: https://www.ibm.com/developerworks/cn/linux/l-cn-gpb/index.html
 
 整理这个文章有点晚了，忘了是什么样的错误了，报错是在下面的代码附近：
 
@@ -68,4 +69,3 @@ make[6]: Leaving directory '/home/xuegao/data/openwrt/18061/build_dir/target-x86
 
 该bug在文件**mathlimits.h**中，问题代码在232行左右
 
- [1]: https://sourceware.org/glibc/wiki/Release/2.26#Removal_of_.27struct_ucontext.27</https:>

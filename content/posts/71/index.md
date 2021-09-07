@@ -110,7 +110,7 @@ unable to open '/usr/local/nginx/conf/ssl/private/index.txt'
 
 ```bash
 # touch index.txt
-# echo '01' &gt; ./crlnumber
+# echo '01' > ./crlnumber
 ```
 
 
@@ -233,7 +233,7 @@ cp ../openssl.cnf.bak /etc/pki/tls/openssl.cnf
 为了方便管理，我将nginx的目录索引也打开了，在nginx中加入下述配置
 
 
-```bash
+```nginx
 location ~ {
     autoindex on;
     autoindex_localtime on;
@@ -253,7 +253,7 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" alway
 
 ## 效果
 
-将用户证书导入证书库的“个人”中，将自签发的CA也导入受信任的颁发机构，保证系统信任自签发的用户证书，然后去浏览页面时会自动弹出证书认证请求
+将用户证书导入证书库的`个人`中，将自签发的CA也导入受信任的颁发机构，保证系统信任自签发的用户证书，然后去浏览页面时会自动弹出证书认证请求
 
 ![图片](./1560938704-1.png)
 

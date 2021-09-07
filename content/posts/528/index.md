@@ -558,7 +558,7 @@ systemctl enable iptables.service
 
 
 
-```mongo
+```js
 rs.initiate()
 use admin
 db.createUser(
@@ -585,7 +585,7 @@ db.createUser(
 
 
 
-```mongo
+```js
 
 # shell命令
 /data/mongodb-linux-x86_64-rhel80-4.2.1/bin/mongo --port 27017 -u <username> -p
@@ -603,7 +603,7 @@ rs.addArb("域名:27017");
 
 
 
-```mongo
+```js
 rs.slaveOk()
 ```
 

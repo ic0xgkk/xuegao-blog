@@ -65,7 +65,7 @@ ite-bps="/dev/sdb:30mb" --device-read-iops="/dev/sdb:90" --device-write-iops="/d
 此处我用的10.3.18，因此实例里使用wget进行下载得到如下图1
 
 
-![图1. mariadb下载](./image-10.png)
+![图1](./image-10.png)
 图1. mariadb下载
 
 解压后进入文件夹，新建 **build** 文件夹，进入该文件夹
@@ -128,7 +128,7 @@ yum install gnutls-devel
 创建配置成功了（如下图2），接下来可以开始编译了
 
 
-![图2. 生成编译配置成功](./image-11.png)
+![图2](./image-11.png)
 图2. 生成编译配置成功
 
 紧接着开始make

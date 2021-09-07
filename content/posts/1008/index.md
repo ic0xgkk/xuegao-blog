@@ -8,10 +8,6 @@ draft: false
 title: nginx和httpd强迫症配置
 ---
 
-
-
-
-
 ## Nginx
 
 首先注意一下nginx匹配location的顺序（优先级从上到下）：
@@ -28,8 +24,7 @@ title: nginx和httpd强迫症配置
 
 
 
-```
-
+```nginx
 location ~ /.well-known {
             allow all;
         }
@@ -37,7 +32,6 @@ location ~ /.well-known {
         {
             deny all;
         }
-
 ```
 
 
@@ -50,9 +44,8 @@ location ~ /.well-known {
 
 
 
-```
-
-location ~ .*\.(mp3|wma|flv|mp4|wmv|ogg|avi|doc|docx|xls|xlsx|ppt|pptx|txt|pdf|zip|exe|tat|ico|swf|bmp|gif|jpeg|jpg|png|svg|tiff|woff2)$
+```nginx
+        location ~ .*\.(mp3|wma|flv|mp4|wmv|ogg|avi|doc|docx|xls|xlsx|ppt|pptx|txt|pdf|zip|exe|tat|ico|swf|bmp|gif|jpeg|jpg|png|svg|tiff|woff2)$
         {
             expires      30d;
         }
@@ -60,20 +53,18 @@ location ~ .*\.(mp3|wma|flv|mp4|wmv|ogg|avi|doc|docx|xls|xlsx|ppt|pptx|txt|pdf|z
         {
             expires      3d;
         }
-
 ```
 
 
 
 ### conf/proxy-pass-php.conf
 
-这个文件是拿军哥的改的，增加了负载均衡和故障切换（其实在这里是重试的作用，具体有没有效果我也不知道，参考文章：<a aria-label="链接（在新窗口打开）" href="https://hashnode.com/post/how-to-configure-nginx-to-hold-the-connections-and-retry-if-the-proxied-server-returns-502-cilngkof700iteq53ratetsry" rel="noreferrer noopener" target="_blank">链接</a>）。
+这个文件是拿军哥的改的，增加了负载均衡和故障切换（其实在这里是重试的作用，具体有没有效果我也不知道，参考文章：https://hashnode.com/post/how-to-configure-nginx-to-hold-the-connections-and-retry-if-the-proxied-server-returns-502-cilngkof700iteq53ratetsry）。
 
 
 
-```
-
-location /
+```nginx
+        location /
         {
             try_files $uri @apache;
         }
@@ -90,7 +81,6 @@ location /
             proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
             include proxy.conf;
         }
-
 ```
 
 
@@ -101,16 +91,14 @@ location /
 
 
 
-```
-
-if ($time_iso8601 ~ "^(\d{4})-(\d{2})-(\d{2})")
+```nginx
+        if ($time_iso8601 ~ "^(\d{4})-(\d{2})-(\d{2})")
         {
             set $year $1;
             set $month $2;
             set $day $3;
         }
         access_log  /home/wwwlogs/nginx/$host.$year-$month-$day.log logger;
-
 ```
 
 
@@ -123,8 +111,7 @@ if ($time_iso8601 ~ "^(\d{4})-(\d{2})-(\d{2})")
 
 
 
-```
-
+```nginx
 proxy_connect_timeout 300s;
 proxy_send_timeout   300s;
 proxy_read_timeout   300s;
@@ -140,7 +127,6 @@ proxy_set_header   Cookie $http_cookie;
 proxy_set_header   X-Real-IP  $remote_addr;
 proxy_set_header   X-Forwarded-For $http_x_forwarded_for;
 proxy_set_header   X-Forwarded-Proto $scheme;
-
 ```
 
 
@@ -153,8 +139,7 @@ proxy_set_header   X-Forwarded-Proto $scheme;
 
 
 
-```
-
+```nginx
 user  www www;
 worker_processes 1;
 worker_cpu_affinity auto;
@@ -242,8 +227,7 @@ include vhost/*.conf;
 ### conf/vhost/example1.conf
 
 
-```
-
+```nginx
 server
     {
         listen 443 ssl http2;
@@ -280,8 +264,7 @@ server
 ### conf/vhost/example2.conf
 
 
-```
-
+```nginx
 server
     {
         listen 80;
@@ -293,7 +276,6 @@ server
         include proxy-pass-php.conf;
         include logger.conf;
     }
-
 ```
 
 
@@ -314,8 +296,7 @@ vhost配置中不要配置日志，因为我把模块禁用了所以如果还写
 
 
 
-```
-
+```apache
 #
 ServerRoot "/usr/local/apache"
 Listen 127.0.0.1:88
@@ -345,47 +326,47 @@ LoadModule dir_module modules/mod_dir.so
 LoadModule alias_module modules/mod_alias.so
 LoadModule rewrite_module modules/mod_rewrite.so
 LoadModule php7_module        modules/libphp7.so
-<ifmodule unixd_module="">
+<IfModule unixd_module>
 User www
 Group www
-</ifmodule>
+</IfModule>
 ServerAdmin i@xuegaogg.com
 ServerName 127.0.0.1:88
-<directory></directory>
+<Directory />
     AllowOverride All
     Require all granted
-
+</Directory>
 DocumentRoot "/home/wwwroot/default"
-<directory "="" default"="" home="" wwwroot="">
+<Directory "/home/wwwroot/default">
     Options FollowSymLinks
     AllowOverride All
     Require all granted
-</directory>
-<ifmodule dir_module="">
+</Directory>
+<IfModule dir_module>
     DirectoryIndex index.html index.htm index.php
-</ifmodule>
-<files ".ht*"="">
+</IfModule>
+<Files ".ht*">
     Require all denied
-</files>
+</Files>
 ErrorLog "/home/wwwlogs/httpd/error.log"
 LogLevel crit
-<ifmodule alias_module="">
+<IfModule alias_module>
     ScriptAlias /cgi-bin/ "/usr/local/apache/cgi-bin/"
-</ifmodule>
-<ifmodule cgid_module="">
-</ifmodule>
-<directory "="" apache="" cgi-bin"="" local="" usr="">
+</IfModule>
+<IfModule cgid_module>
+</IfModule>
+<Directory "/usr/local/apache/cgi-bin">
     AllowOverride All
     Options None
     Require all granted
-</directory>
-<ifmodule mime_module="">
+</Directory>
+<IfModule mime_module>
     TypesConfig conf/mime.types
     AddType application/x-compress .Z
     AddType application/x-gzip .gz .tgz
     AddType application/x-httpd-php .php
     AddType application/x-httpd-php-source .phps
-</ifmodule>
+</IfModule>
 Include conf/extra/mod_remoteip.conf
 # Server-pool management (MPM specific)
 Include conf/extra/httpd-mpm.conf
@@ -393,16 +374,15 @@ Include conf/extra/httpd-mpm.conf
 Include conf/extra/httpd-vhosts.conf
 # Various default settings
 Include conf/extra/httpd-default.conf
-<ifmodule proxy_html_module="">
+<IfModule proxy_html_module>
 Include conf/extra/proxy-html.conf
-</ifmodule>
-<ifmodule ssl_module="">
+</IfModule>
+<IfModule ssl_module>
 SSLRandomSeed startup builtin
 SSLRandomSeed connect builtin
-</ifmodule>
+</IfModule>
 SetEnvIf X-Forwarded-Proto https HTTPS=on
 IncludeOptional conf/vhost/*.conf
-
 ```
 
 
@@ -413,22 +393,20 @@ IncludeOptional conf/vhost/*.conf
 
 
 
-```
-
-<virtualhost *:88="">
+```apache
+<VirtualHost *:88>
 ServerAdmin i@xuegaogg.com
 DocumentRoot "/home/wwwroot/default"
 ServerName _
-<directory "="" default"="" home="" wwwroot="">
+<Directory "/home/wwwroot/default">
     SetOutputFilter DEFLATE
     Options FollowSymLinks
     AllowOverride All
     Order allow,deny
     Allow from all
     DirectoryIndex index.html
-</directory>
-</virtualhost>
-
+</Directory>
+</VirtualHost>
 ```
 
 
@@ -439,9 +417,8 @@ ServerName _
 
 
 
-```
-
-<ifmodule mpm_prefork_module="">
+```apache
+<IfModule mpm_prefork_module>
     StartServers             3
     MinSpareServers          5
     MaxSpareServers          10
@@ -449,8 +426,7 @@ ServerName _
     MaxClients               200
     ServerLimit              200
     MaxConnectionsPerChild   500
-</ifmodule>
-
+</IfModule>
 ```
 
 
@@ -467,7 +443,7 @@ ServerName _
 由于Imagick实在是不可或缺，gd库对于一些功能无法支持，所以还是得重新打开，开回prefork模式了。
 
 
-```
+```apache
 # 这里可以不用看了
 # worker MPM
 # StartServers: initial number of server processes to start
@@ -477,7 +453,7 @@ ServerName _
 # MaxRequestWorkers: maximum number of worker threads
 # MaxConnectionsPerChild: maximum number of connections a server process serves
 #                         before terminating
-<ifmodule mpm_worker_module="">
+<IfModule mpm_worker_module>
     StartServers             2
     MinSpareThreads          5
     MaxSpareThreads         10
@@ -485,8 +461,7 @@ ServerName _
     MaxRequestWorkers       20
     MaxConnectionsPerChild  50
     ThreadLimit 20
-</ifmodule>
-
+</IfModule>
 ```
 
 ~~之所以要调这么小，是为了避免并发的线程数太多导致内存开销太高，避免内存持续占用着出现回收延迟。毕竟是小内存的机器，调小线程数有助于爱与和平（笑~~

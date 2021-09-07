@@ -50,7 +50,7 @@ Linux的虚拟网络接口（Linux interfaces for virtual networking）非常丰
 
 ### Bridge
 
-![图1. bridge](./bridge.png)
+![图1](./bridge.png)
 图1. bridge
 
 和交换机比较类似，bridge同样也是在接口间进行转发（即连接所有接口）。用于在不同vm、容器间转发流量。同时，bridge也支持STP和VLAN过滤等
@@ -59,14 +59,14 @@ Linux的虚拟网络接口（Linux interfaces for virtual networking）非常丰
 
 ### Bonded interface
 
-![图2. bonded interface](./bond.png)
+![图2](./bond.png)
 图2. bonded interface
 
 即L2链路聚合。可以用来做热备或者负载平衡，讲多组逻辑链路捆绑成为一个大带宽的虚链路，提高容量和可靠性
 
 ### Team device
 
-![图3. team device](./team.png)
+![图3](./team.png)
 图3. team device
 
 Team device和bonded的不同之处，在于team得到的虚链路的带宽并不会提升，而bonding则是同时使用两个管道进行传输，带宽会得到提升。
@@ -74,21 +74,21 @@ Team device和bonded的不同之处，在于team得到的虚链路的带宽并�
 至于完整的特性对比，可以参考下图
 
 
-![图4. team和bonding特性对比](./image.png)
+![图4](./image.png)
 图4. team和bonding特性对比
 
 因此结合上表来看，使用bonding的情况下，由于其支持TLB和ALB，因此得到的虚链路可以聚合链路的容量，然而team由于并不支持ALB，因此也只能实现发送链路容量的增加，并没有办法提高接收链路容量（即单向）
 
 ### VLAN
 
-![图5. vlan](./vlan.png)
+![图5](./vlan.png)
 图5. vlan
 
 VLAN，即Virtual LAN，较为常用，一般用于分离广播域。其不同的VLAN ID对应不同的VLAN区域，广播域都隔离，如果需要跨VLAN通信只能通过路由方式解决（即L2向L3）
 
 ### VXLAN
 
-![图6. vxlan](./vxlan.png)
+![图6](./vxlan.png)
 图6. vxlan
 
 VXLAN，Virtual eXtensible Local Area Network，即虚拟可扩展局域网，是SDN技术比较常用的一个方式。主要用于边缘用户接入使用，通过VNI标记VXLAN端口，由于VLAN ID最多只能有4096个，QinQ方式的情况下才能实现1600万左右的租户接入（配置麻烦），但是VNI使用的24bit标识，无需Tag Stack即可实现1600万左右的租户接入（VLAN ID也是12bit，QinQ情况下可以理解成和VNI一样的标识范围）
@@ -97,7 +97,7 @@ vxlan网关对所有的数据进行解封装后，可以结合SDN实现扁平化
 
 ### MACVLAN
 
-![图7. macvlan](./macvlan.png)
+![图7](./macvlan.png)
 图7. macvlan
 
 macvlan，即通过MAC划分广播域。玩过openwrt多拨的应该都知道，其原理就是macvlan
@@ -106,14 +106,14 @@ macvlan共有3种模式：
 
 #### Private Mode
 
-![图7. macvlan private](./macvlan_01.png)
+![图7](./macvlan_01.png)
 图7. macvlan private
 
 即不同macvlan间全部隔离，不允许互相访问。隔离方式为二层内隔离
 
 #### VEPA Mode
 
-![图8. vepa mode](./macvlan_02.png)
+![图8](./macvlan_02.png)
 图8. vepa mode
 
 允许互通，但是所有二层流量必须走到父接口之上才可以，父接口内不予以进行转发。上联的设备需要支持Hairpin（发卡模式， 802.1Qbg），否则按照默认的规则，帧是不会回传到入口的接口，将会导致无法通讯。
@@ -122,21 +122,21 @@ macvlan共有3种模式：
 
 #### Bridge Mode
 
-![图8. bridge mode](./macvlan_03.png)
+![图8](./macvlan_03.png)
 图8. bridge mode
 
 所有macvlan在父接口处完成forward，上联交换无法看到转发过程。此种方法的流量转发路径最短，性能最好，但是需要额外考虑安全问题
 
 ####  Passthru Mode
 
-![图9. passthru mode](./macvlan_04.png)
+![图9](./macvlan_04.png)
 图9. passthru mode
 
 允许单个虚拟机直接连接到物理接口，应该是单根虚拟化（SR-IOV）的方式。一个独立的物理网卡即为一个PF（Physical Function，物理功能），当其支持单根虚拟化时，该PF可以激活多个VF（Virtual Functions，虚拟功能），这些VF可以被直接直通进虚拟机，这样一来相当于所有的网络处理全部直接交给了硬件完成，借此提高性能。
 
 ### IPVLAN
 
-![图10. ipvlan](./ipvlan.png)
+![图10](./ipvlan.png)
 图10. ipvlan
 
 IPVLAN比较类似MACVLAN，只是MACVLAN使用MAC分割广播域，IPVLAN使用IP分割广播域而已。在IPVLAN中，所有的Endpoint均拥有相同的MAC地址
@@ -145,35 +145,35 @@ IPVLAN比较类似MACVLAN，只是MACVLAN使用MAC分割广播域，IPVLAN使用
 
 #### L2 Mode
 
-![图11. l2 mode](./ipvlan_01.png)
+![图11](./ipvlan_01.png)
 图11. l2 mode
 
 比较类似于MACVLAN的Bridge模式，转发均是通过父接口完成
 
 #### L3 Mode
 
-![图12. l3 mode](./ipvlan_02.png)
+![图12](./ipvlan_02.png)
 图12. l3 mode
 
 在各个endpoint间使用L3路由来转发
 
 ### MACVTAP/IPVTAP
 
-![图13. MACVTAP/IPVTAP](./macvtap.png)
+![图13](./macvtap.png)
 图13. MACVTAP/IPVTAP
 
 比较类似于一个虚拟化的网桥，当MACVTAP/IPVTAP实例在物理接口上被创建时，内核将会自动创建TAP/TUN设备，可以直接对虚拟机使用。常规方式将会分别创建一个TAP/TUN设备和一个Bridge，使用MACVTAP/IPVTAP只会创建一个设备而已。
 
 ### MACsec
 
-![图14. macsec](./macsec.png)
+![图14](./macsec.png)
 图14. macsec
 
 比较类似于IPsec，只是MACsec在L2进行加密，可以保护ARP、DHCP、ND等众多请求
 
 ### VETH
 
-![图15. veth](./veth.png)
+![图15](./veth.png)
 图15. veth
 
 VETH为一个本地的网络隧道，并且成对出现。主要用在跨网络命名空间的情况下数据的传输，其使用pipe管道的形式传输数据。由于veth要求设备必须成对出现，因此当一端断开后，另一端也会自动断开

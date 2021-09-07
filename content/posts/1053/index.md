@@ -10,9 +10,6 @@ title: Nginx部署请求头修改并解决WP缓存一致性问题
 
 此处的“缓存一致性”我定义为在WordPress套有CDN的情况下，不论管理员是否登录，访问文章页时都不会出现上方的黑色的bar和页面中的编辑按钮等管理用元素，确保CDN缓存下的页面中不存在敏感信息。
 
-<!--more 阅读更多-->
-
-
 ## 前言
 
 WordPress为MVC的架构，这是众所周知的，好处是做伪静态后对页面上缓存比较方便，坏处是如果页面发生变动时缓存需要同步更新，否则就会出现延迟。这也就存在了一个比较大的问题是，WP登录管理员后，默认会显示黑色的bar，并在每个文章后显示编辑按钮，显示编辑按钮还好，但是黑色的bar上带有用户名，如果带bar的页面被CDN缓存上，所有的访客都能直接看到这些内容，无疑这是存在安全隐患的。
@@ -31,7 +28,7 @@ Nginx
 
 ### 为nginx安装模块
 
-为了实现这个操作，需要对入站的请求进行匹配，而nginx自带的**ngx_http_headers_module**模块并不支持这一操作，其只支持响应头添加，因此我们需要手动引入新模块——**headers-more-nginx-module**。这是一个非官方的模块，其GitHub地址在<a aria-label="这里（在新窗口打开）" href="https://github.com/openresty/headers-more-nginx-module#more_set_input_headers" rel="noreferrer noopener" target="_blank">这里</a>。
+为了实现这个操作，需要对入站的请求进行匹配，而nginx自带的**ngx_http_headers_module**模块并不支持这一操作，其只支持响应头添加，因此我们需要手动引入新模块——**headers-more-nginx-module**。这是一个非官方的模块，其GitHub地址在[这里](https://github.com/openresty/headers-more-nginx-module#more_set_input_headers)。
 
 暂且说不来nginx为什么不支持引入动态链接，httpd对这方面支持挺好的，nginx没有做过相关研究，暂且不发表见解，看到网上说可以引入动态编译的链接库即可，编译完结果把我nginx覆盖了….才发现nginx即便是编译模块的动态链接库，nginx主程序也要重新编译…我不知道是我没细看官方文档还是真的只能这样…我还真的有点迷…所以还不如直接重新编译了得了。
 
@@ -39,10 +36,8 @@ Nginx
 
 
 
-```
-
-./configure --user=www --group=www --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --with-http_v2_module --with-http_gzip_static_module --with-http_sub_module --with-stream --with-stream_ssl_module --with-openssl=&lt;你openssl的源码的路径&gt; --with-openssl-opt='enable-weak-ssl-ciphers' --with-ld-opt='-ljemalloc' --add-module=&lt;你headers-more-nginx-module模块源码的路径&gt;
-
+```bash
+./configure --user=www --group=www --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --with-http_v2_module --with-http_gzip_static_module --with-http_sub_module --with-stream --with-stream_ssl_module --with-openssl=<你openssl的源码的路径> --with-openssl-opt='enable-weak-ssl-ciphers' --with-ld-opt='-ljemalloc' --add-module=<你headers-more-nginx-module模块源码的路径>
 ```
 
 
@@ -61,9 +56,8 @@ Nginx
 
 
 
-```
-
-location /
+```nginx
+        location /
         {
             try_files $uri @apache;
         }
@@ -90,7 +84,6 @@ location /
             proxy_next_upstream error timeout http_500 http_502 http_503 http_504;
             include proxy.conf;
         }
-
 ```
 
 
@@ -115,9 +108,8 @@ location /
 
 
 
-```
-
-location /
+```nginx
+        location /
         {
             try_files $uri @apache;
         }
@@ -134,7 +126,6 @@ location /
 #            proxy_pass http://127.0.0.1:88;
 #            include proxy.conf;
 #        }
-
 ```
 
 
@@ -145,12 +136,9 @@ location /
 
 查了下文档，找到这么段话
 
-<blockquote class="wp-block-quote">
-<p>
-    Checks the existence of files in the specified order and uses the first found file for request processing; the processing is performed in the current context. The path to a file is constructed from the file parameter according to the root and alias directives. It is possible to check directory’s existence by specifying a slash at the end of a name, e.g. “$uri/”. If none of the files were found, an internal redirect to the uri specified in the last parameter is made.
-  </p>
-<cite>Module ngx_http_core_module – Nginx.org</cite>
-</blockquote>
+> Checks the existence of files in the specified order and uses the first found file for request processing; the processing is performed in the current context. The path to a file is constructed from the file parameter according to the root and alias directives. It is possible to check directory’s existence by specifying a slash at the end of a name, e.g. “$uri/”. If none of the files were found, an internal redirect to the uri specified in the last parameter is made.
+> 
+> Module ngx_http_core_module – Nginx.org
 
 这段话的意思是，try_files会去检查访问的URI的文件是否存在，如果存在会使用第一个找到的这个文件响应，否则会重定向到后边的的URI去。这就意味着，在我还没改配置的时候（上边那个配置文件里php那块没有注释的情况下），所有请求会先匹配是否后缀是php，是的话就反代到httpd去，否则走全局的location，所以在我注释掉了上边的内容后就挂了…因为注释掉后nginx比httpd先查找，发现文件存在因此就直接返回了php文件，然后危险由此而来。
 
@@ -166,26 +154,21 @@ location /
 
 好了，我看到官方有一篇文章题目叫做**If Is Evil**，我觉得我现在也是不幸的了，自从看了中文社区后。这又警告我们，能不要看中文社区就不要看中文社区….内容残缺太多…
 
-<blockquote class="wp-block-quote">
-<p>
-    Directive if has problems when used in location context, in some cases it doesn’t do what you expect but something completely different instead. In some cases it even segfaults. It’s generally a good idea to avoid it if possible.
-  </p>
-<cite>Introduction – If Is Evil</cite>
-</blockquote>
+> Directive if has problems when used in location context, in some cases it doesn’t do what you expect but something completely different instead. In some cases it even segfaults. It’s generally a good idea to avoid it if possible.
+> 
+> Introduction – If Is Evil
 
 这段话大意是，如果你把if用在location里，他可能会出一些问题，问题不仅仅是和你的意愿完全相反，甚至可能直接段错误然后你没了…最好的办法就是，别用。
 
 文档非常肯定得说只有下边两种是安全的，其他的都不能保证绝对可靠：
 
-  * return …;
-  * rewrite … last;
+  * return ...;
+  * rewrite ... last;
 
 至于解决的办法，也不是没有，官方建议最好把if写在server块里去，这样就不会出问题了。在文档中也列举了这几种作死行为：
 
 
-
-```
-
+```nginx
 # only second header will be present in response
 # not really bug, just how it works
 
@@ -210,8 +193,7 @@ location /only-one-if {
 
 
 
-```
-
+```nginx
 # request will be sent to backend without uri changed
 # to '/' due to if
 
@@ -232,8 +214,7 @@ location /proxy-pass-uri {
 
 
 
-```
-
+```nginx
 # try_files wont work due to if
 
 location /if-try-files {
@@ -253,8 +234,7 @@ location /if-try-files {
 
 
 
-```
-
+```nginx
 # nginx will SIGSEGV
 
 location /crash {
@@ -278,8 +258,7 @@ location /crash {
 
 
 
-```
-
+```nginx
 # alias with captures isn't correcly inherited into implicit nested
 # location created by if
 
@@ -291,7 +270,7 @@ location ~* ^/if-and-alias/(?<file>.*) {
     if ($true) {
         # nothing
     }
-}</file>
+}
 ```
 
 
@@ -299,21 +278,17 @@ location ~* ^/if-and-alias/(?<file>.*) {
 上边这个配置会导致带有捕获的alias（应该是指$file吧）无法正确继承。
 
 ## if的工作原理
-<blockquote class="wp-block-quote">
-<p>
-    In short, Nginx’s “if” block effectively creates a (nested) location block and once the “if” condition matches, only the content handler of the inner location block (i.e., the “if” block) will be executed.
-  </p>
-<cite>How nginx “location if” works</cite>
-</blockquote>
+> In short, Nginx’s “if” block effectively creates a (nested) location block and once the “if” condition matches, only the content handler of the inner location block (i.e., the “if” block) will be executed.
+> 
+> How nginx “location if” works
 
 上边这段话的意思是，if的实现是嵌套的location声明实现的，一旦匹配到，只有内部的location块（即if里的）的content handler会被执行。
 
 ### 示例一
 
 
-```
-
-location /proxy {
+```nginx
+  location /proxy {
       set $a 32;
       if ($a = 32) {
           set $a 56;
@@ -328,30 +303,17 @@ location /proxy {
 ```
 
 
-<blockquote class="wp-block-quote">
-<p>
-    Calling /proxy gives 76 because it works in the following steps:
-  </p>
-<p>
-    1. Nginx runs all the rewrite phase directives in the order that they’re in the config file, i.e., set $a 32;<br/> if ($a = 32) {<br/> set $a 56;<br/> }<br/> set $a 76; and $a gets the final value of 76.
-  </p>
-<p>
-    2. Nginx traps into the “if” inner block because its condition $a = 32 was met in step 1.
-  </p>
-<p>
-    3. The inner block does not has any content handler, ngx_proxy inherits the content handler (that of ngx_proxy) in the outer scope (see src/http/modules/ngx_http_proxy_module.c:2025).
-  </p>
-<p>
-    4. Also the config specified by proxy_pass also gets inherited by the inner “if” block (see src/http/modules/ngx_http_proxy_module.c:2015)
-  </p>
-<p>
-    5. Request terminates (and the control flow never goes outside of the “if” block).
-  </p>
-<p>
-    That is, the proxy_pass directive in the outer scope will never run in this example. It is “if” inner block that actually serves you.
-  </p>
-<cite>How nginx “location if” works</cite>
-</blockquote>
+> Calling /proxy gives 76 because it works in the following steps:
+> 
+> 1. Nginx runs all the rewrite phase directives in the order that they’re in the config file, i.e., set $a 32;<br/> if ($a = 32) {<br/> set $a 56;<br/> }<br/> set $a 76; and $a gets the final value of 76.
+> 1. Nginx traps into the “if” inner block because its condition $a = 32 was met in step 1.
+> 1. The inner block does not has any content handler, ngx_proxy inherits the content handler (that of ngx_proxy) in the outer scope (see src/http/modules/ngx_http_proxy_module.c:2025).
+> 1. Also the config specified by proxy_pass also gets inherited by the inner “if” block (see src/http/modules/ngx_http_proxy_module.c:2015)
+> 1. Request terminates (and the control flow never goes outside of the “if” block).
+> 
+> That is, the proxy_pass directive in the outer scope will never run in this example. It is “if” inner block that actually serves you.
+> 
+> How nginx “location if” works
 
 在上边这个配置中，匹配到/proxy时会执行这些步骤：
 
@@ -366,9 +328,8 @@ location /proxy {
 ### 示例二
 
 
-```
-
-location /proxy {
+```nginx
+  location /proxy {
       set $a 32;
       if ($a = 32) {
           set $a 56;
@@ -389,7 +350,7 @@ location /proxy {
 
   1. 按照顺序重写配置
   2. 陷入（$a=32）
-  3. 由于内嵌中存在了content handler（即echo），所以客户端可以看到内容为“a = 76”
+  3. 由于内嵌中存在了content handler（即echo），所以客户端可以看到内容为`a = 76`
   4. 请求终止
 
 上边这个过程可以看到，nginx对于请求的处理会终止到content handler，我把这个词理解为内容句柄，内容句柄只会执行一次，相当于return，然后这个业务流将会结束。由于按照配置重写后，a最终是等于76，所以客户端看到的a为76，但是由于在if处是匹配的，所以会正常陷入if。
@@ -397,9 +358,8 @@ location /proxy {
 ### 示例三
 
 
-```
-
-location /proxy {
+```nginx
+ location /proxy {
       set $a 32;
       if ($a = 32) {
           set $a 56;
@@ -428,9 +388,8 @@ location /proxy {
 ### 示例四
 
 
-```
-
-location /proxy {
+```nginx
+  location /proxy {
       set $a 32;
       if ($a = 32) {
           return 404;
@@ -451,9 +410,8 @@ location /proxy {
 
 
 
-```
-
-$ curl localhost/proxy
+```bash
+  $ curl localhost/proxy
   HTTP/1.1 404 Not Found
   Server: nginx/0.8.54 (without pool)
   Date: Mon, 14 Feb 2011 05:24:00 GMT
@@ -469,10 +427,7 @@ $ curl localhost/proxy
 
 ## 参考资料
 
-  * [http://nginx.org/en/docs/http/ngx_http_core_module.html#location][1] 
-  * [http://nginx.org/en/docs/http/ngx_http_core_module.html#try_files][2] 
-  * <https: depth="" ifisevil="" resources="" start="" topics="" wiki="" www.nginx.com=""></https:> 
-  * <https: 03="" 2011="" agentzh.blogspot.com="" how-nginx-location-if-works.html="">
-
- [1]: http://nginx.org/en/docs/http/ngx_http_core_module.html#location
- [2]: http://nginx.org/en/docs/http/ngx_http_core_module.html#try_files</https:>
+* http://nginx.org/en/docs/http/ngx_http_core_module.html#location
+* http://nginx.org/en/docs/http/ngx_http_core_module.html#try_files
+* https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
+* https://agentzh.blogspot.com/2011/03/how-nginx-location-if-works.html

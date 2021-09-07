@@ -10,10 +10,6 @@ title: PHP环境优化
 
 众所周知，php被成为“世界上最美好的语言”，它的性能也实在是令人堪忧。大多数的php应用都是以MVC的方式存在，因此整体上不如前后分离的那么舒服，因此如果需要php达到令人较为舒服的境界，需要多处进行优化。
 
-
-
-
-
 ## 前言
 
 这也是本博客使用的优化策略，旨在尽可能确保内存开销小的情况下提高CPU使用率（因为内存不够用而CPU单核却还是听够用的）。
@@ -26,8 +22,7 @@ title: PHP环境优化
 
 
 
-```
-
+```ini
 [Zend Opcache]
 zend_extension="opcache.so"
 opcache.memory_consumption=200
@@ -37,38 +32,26 @@ opcache.validate_timestamps=1
 opcache.revalidate_freq=7200
 opcache.fast_shutdown=1
 opcache.enable_cli=0
-
 ```
 
 
-
-opcache.enable_cli=0 表示关闭cli显示，一般调试使用
-
-opcache.memory_consumption=200 最大缓存使用（MB）。服务器只有1G内存，还是省着点用吧
-
-opcache.interned_strings_buffer=8 兴趣字符驻留（MB）。当有重复内容时，会通过指针形式做指向进而节省内存
-
-opcache.max_accelerated_files=1000000 最大可以缓存的文件数量，个人觉得开到最大就行
-
-opcache.validate_timestamps=1 是否自动检测php更新。如果设置为0，**当php文件更新时，需要手动刷缓存，否则可能会因为命中缓存导致无法预料的问题**，此时下方的文件变动检测周期无效；当设置为1时，会自动检测文件是否变化，下方的变动周期有效
-
-opcache.revalidate_freq=7200 自动检测php是否更新的周期（s），考虑到文件变化不是很频繁，因此设置较长，更新后手动刷一下缓存即可。
+* opcache.enable_cli=0 表示关闭cli显示，一般调试使用
+* opcache.memory_consumption=200 最大缓存使用（MB）。服务器只有1G内存，还是省着点用吧
+* opcache.interned_strings_buffer=8 兴趣字符驻留（MB）。当有重复内容时，会通过指针形式做指向进而节省内存
+* opcache.max_accelerated_files=1000000 最大可以缓存的文件数量，个人觉得开到最大就行
+* opcache.validate_timestamps=1 是否自动检测php更新。如果设置为0，**当php文件更新时，需要手动刷缓存，否则* 可能会因为命中缓存导致无法预料的问题**，此时下方的文件变动检测周期无效；当设置为1时，会自动检测文件是否变* 化，下方的变动周期有效
+* opcache.revalidate_freq=7200 自动检测php是否更新的周期（s），考虑到文件变化不是很频繁，因此设置较长，更新后手动刷一下缓存即可。
 
 ### 加大数据库查询缓存
 
 综合实际考虑，修改数据并不是非常频繁，主要以读为主，因此可以稍微加大查询缓存。
 
-
-
-```
-
+```ini
 [mysqld]
 query_cache_limit = 4M
 query_cache_size = 32M
 
 ```
-
-
 
 只需要修改my.cnf，试其中如上两个值改动即可。第一个query_cache_limit表示单个查询结果的大小限制（小于4M都可以被缓存），第二个query_cache_size表示查询缓存的大小。
 
@@ -82,8 +65,7 @@ query_cache_size = 32M
 
 
 
-```
-
+```nginx
 worker_processes 1;
 
 events
@@ -104,35 +86,12 @@ events
 
 注意：mpm模块**同时只能被启用一个**。所以如果发现修改了conf/extra/httpd-mpm.conf并没有作用后，记得检查httpd.conf中是否启用了这个模块，如果没有需要注释掉其他模块切换到这个模块上去。
 
-<p class="has-background has-medium-gray-background-color">
-~~StartServers: 启动时的进程数，由于我要节省内存开销，所以直接设置为1~~
-</p>
-<p class="has-background has-medium-gray-background-color">
-~~MinSpareThreads: 最小的备用线程，觉得50够用~~
-</p>
-<p class="has-background has-medium-gray-background-color">
-~~MaxSpareThreads: 最大的备用线程，觉得100足矣。需要特别注意的是，这里的值如果超出下边的 ThreadsPerChild 的话，进程数会增加，最小备用线程数同理。~~
-</p>
-<p class="has-background has-medium-gray-background-color">
-~~ThreadsPerChild: 每个进程的最大线程数。当线程可以容纳全局最大线程之和时，那么就确定了worker只会存在一个。~~
-</p>
-<p class="has-background has-medium-gray-background-color">
-~~MaxRequestWorkers: 所有worker的最大线程之和。我按照600计算，够用了~~
-</p>
-<p class="has-background has-medium-gray-background-color">
-~~MaxConnectionsPerChild: 一个进程在终止之前被允许的接受过的连接数之和。说白了就是，这个进程接够多少个连接后就需要强制终止。不建议开启，有概率出502~~
-</p>
 
-在`/etc/sysctl.conf`中新增一行`vm.swappiness = 3`然后执行`sysctl -p`即可。此处我建议将swappiness的值设置在3-5左右比较好，之所以不建议设置为0，是由于Linux会侦测并kill掉内存使用率到100%的进程（表述可能不是很严谨），swappiness设为0的情况下有概率导致程序由于OOM被杀。
+* ~~StartServers: 启动时的进程数，由于我要节省内存开销，所以直接设置为1~~
+* ~~MinSpareThreads: 最小的备用线程，觉得50够用~~
+* ~~MaxSpareThreads: 最大的备用线程，觉得100足矣。需要特别注意的是，这里的值如果超出下边的 ThreadsPerChild 的话，进程数会增加，最小备用线程数同理。~~
+* ~~ThreadsPerChild: 每个进程的最大线程数。当线程可以容纳全局最大线程之和时，那么就确定了worker只会存在一个。~~
+* ~~MaxRequestWorkers: 所有worker的最大线程之和。我按照600计算，够用了~~
+* ~~MaxConnectionsPerChild: 一个进程在终止之前被允许的接受过的连接数之和。说白了就是，这个进程接够多少个连接后就需要强制终止。不建议开启，有概率出502~~
+* 在`/etc/sysctl.conf`中新增一行`vm.swappiness = 3`然后执行`sysctl -p`即可。此处我建议将swappiness的值设置在3-5左右比较好，之所以不建议设置为0，是由于Linux会侦测并kill掉内存使用率到100%的进程（表述可能不是很严谨），swappiness设为0的情况下有概率导致程序由于OOM被杀。
 
-~~关于实际情况还会再跟进做一下观察，晚点再更新~~
-<p class="has-text-color has-background" style="background-color:#ff0004;color:#eaff00">
-  更新内容：
-</p>
-<p class="has-text-color has-background" style="background-color:#ff0004;color:#eaff00">
-  不建议使用httpd。可以看新文章：<a aria-label="链接（在新窗口打开）" href="https://blog.xuegaogg.com/archives/1008.html#Apache_httpd" rel="noreferrer noopener" target="_blank">链接</a>
-</p>
-
-### 关闭THP
-
-看这篇文章：<https: 528.html#thp="" archives="" blog.xuegaogg.com=""></https:>

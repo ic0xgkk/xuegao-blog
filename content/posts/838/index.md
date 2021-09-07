@@ -22,7 +22,7 @@ title: 为PHP安装Imagick
 
 本部分即安装ImageMagick
 
-找到官网： <https: imagemagick.org="" install-source.php="" script=""> ，从中我们可以得到源码包的下载链接：<https: download="" imagemagick.org="" imagemagick.tar.gz="">
+找到官网： https://imagemagick.org/script/install-source.php，从中我们可以得到源码包的下载链接：https://imagemagick.org/download/ImageMagick.tar.gz
 
 下载解压的方式就不说了
 
@@ -32,7 +32,7 @@ title: 为PHP安装Imagick
 
 ## 安装PHP扩展
 
-源码包我们可以在这里找到： <https: imagick="" package="" pecl.php.net=""> 
+源码包我们可以在这里找到： https://pecl.php.net/package/imagick
 
 下载解压方式就不说了
 
@@ -49,13 +49,13 @@ title: 为PHP安装Imagick
 我的apache在启动后php加载magick时就直接报段错误然后退出了，导致网页访问全部成了502网关错误。查找日志错误如下：
 
 
-```
+```bash
 PHP Warning:  PHP Startup: Unable to load dynamic library 'imagick.so' (tried: /usr/local/php/lib/php/extensions/no-debug-zts-20180731/imagick.so (/usr/lib64/libfontconfig.so.1: undefined symbol: FT_Done_MM_Var), /usr/local/php/lib/php/extensions/no-debug-zts-20180731/imagick.so.so (/usr/local/php/lib/php/extensions/
 no-debug-zts-20180731/imagick.so.so: cannot open shared object file: No such file or directory)) in Unknown on line 0 
 ```
 
 
-查找文档发现是因为Linux版本较新导致的，具体问题的原因并没有做出详细说明，只是提出删除 _libfreetype.so.6_ 就好了，亲测可行（参考资料： [https://kb.tecplot.com/2019/09/11/undefined-symbol-ft_done_mm_var/][1] ）
+查找文档发现是因为Linux版本较新导致的，具体问题的原因并没有做出详细说明，只是提出删除 libfreetype.so.6 就好了，亲测可行（参考资料： https://kb.tecplot.com/2019/09/11/undefined-symbol-ft_done_mm_var/ ）
 
 **注意**
 
@@ -65,6 +65,4 @@ ld的主要作用是管理动态链接库，那么当我删除了libfreetype.so.
 
 查看了一下/etc/ld.so.conf发现还真的是冲突了，其实也就是顺序问题而已，应该让系统自带的freetype 库最先被找到，因此调整一下顺序并重新执行ldconfig 即可。
 
-参考文档： <http: ldconfig.8.html="" linux="" man-pages="" man7.org="" man8="">
-
- [1]: https://kb.tecplot.com/2019/09/11/undefined-symbol-ft_done_mm_var/</http:></https:></https:></https:>
+参考文档： http://man7.org/linux/man-pages/man8/ldconfig.8.html
