@@ -6,7 +6,6 @@ categories:
 date: 2019-06-19 02:50:45+00:00
 draft: false
 title: 从Hexo再度回归WordPress
-summary: "从Hexo改到了WordPress，还是挺香的"
 ---
 
 再一次，我从Hexo回归到了WordPress，真香。
