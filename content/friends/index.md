@@ -3,6 +3,7 @@ title: "友链"
 url: "/friends/"
 summary: "friends"
 ShowToc: false
+enableContentHeader: false
 ---
 
 ### [RouterOS入门](https://rosm.cn/)
