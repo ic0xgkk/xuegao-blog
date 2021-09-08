@@ -2,36 +2,25 @@
 aliases:
 - /archives/1299
 categories:
-- Go语言
-- 算法
+- 语言
 date: 2020-03-19 06:50:38+00:00
 draft: false
 title: Go维护大顶堆进行排序和实现并行排序的一点想法
 ---
 
-
-
-
-
 ## 前言
 
 都说没有最优的算法，只有最合适的算法。然而我在leetcode上提交排序代码时9/10通过，只剩最后一个一大串的排序（估摸着大概4万多个数吧），因为超出时间迟迟无法通过。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
 ![图片](./image-1.png)
-</figure>
-</div>
 
 写到这里，感谢一下陈老哥，不仅在实习上帮助了很多，还解答了好多问题（不愧腾讯大佬）。本文在最开始时拿堆排去排n个数（说白了就是排了全部），而堆排其实并不适合这个场景，下边的表格也很明确得说明了这个问题，所以就慢的一批，感谢陈老哥的提醒。如果图整体排序速度不如快排来的实在（实质是平衡二叉树）
 
 **具体原因：**堆排比较适合的场景是，维护一个堆，通过不断增加元素来排出来特定的数量的最大值或者特定数量的最小值。这也是为什么腾讯音乐那个面试题，让排8G文件里的积分选择使用堆排而不是快排，因为只需要前100个用户的………在堆排排特定数量的情况下，假定只需要知道前K大个数字，那么只需要维护一个K大小的堆，然后一个个向里边添加元素去排，此时维护每个元素的时间复杂度为logK，当元素共n个时，整体的时间复杂度就是nlogK，成为了最小的
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![图片来源：https://www.jianshu.com/p/97459c2ca2a5](./4591091-6ade454f1edb536d.png)
-<figcaption>图片来源：https://www.jianshu.com/p/97459c2ca2a5</figcaption></figure>
-</div>
+![图片](./4591091-6ade454f1edb536d.png)
+图片来源：https://www.jianshu.com/p/97459c2ca2a5
+
 ~~上边这个图是各个排序算法在排不同数据量时的消耗的时间（ms）。可以看到在5W数据量时，堆排序基本算是有优势的，在5000W时，排序才用了21s？？？？？Excuse me？？？为啥我写的排50万用了几分钟？？？？暂且不清楚这个表格里的数据类型是什么样的，我排的是unt64，也不排除是因为数据类型导致的速度下降，晚点有空再测试一下吧。~~
 
 ## 性能分析
@@ -39,7 +28,7 @@ title: Go维护大顶堆进行排序和实现并行排序的一点想法
 经过性能分析发现，跨函数时指针操作效能比传值高…….
 
 
-```
+```bash
 $ go tool pprof main.exe profile
 File: main.exe
 Type: cpu
@@ -48,7 +37,7 @@ Duration: 30.19s, Total samples = 30.09s (99.67%)
 Entering interactive mode (type "help" for commands, "o" for options)
 (pprof) top
 Showing nodes accounting for 29.96s, 99.57% of 30.09s total
-Dropped 26 nodes (cum &lt;= 0.15s)
+Dropped 26 nodes (cum <= 0.15s)
       flat  flat%   sum%        cum   cum%
     22.72s 75.51% 75.51%     22.73s 75.54%  main.sortTree
      7.24s 24.06% 99.57%     29.98s 99.63%  main.(*TopHeapSorting).rebuildTopHeap
@@ -68,7 +57,7 @@ Dropped 26 nodes (cum &lt;= 0.15s)
 这个代码目前是全排的，没有并不是实现部分排序的，不过稍加改动即可实现，就不再花时间去改了
 
 
-```
+```go
 /*
 维护大顶堆实现排序
  */
@@ -116,14 +105,14 @@ func (t *TopHeapSorting) add(element uint64)  {
 排序主函数
  */
 func (t *TopHeapSorting) Sorting() {
-	if t.heapLen &lt;= 1 {
+	if t.heapLen <= 1 {
 		return
 	}
-	for end := t.heapLen - 1; end &gt; 1; end-- {
+	for end := t.heapLen - 1; end > 1; end-- {
 		t.rebuildTopHeap(end)
 		t.topHeap[0], t.topHeap[end] = t.topHeap[end], t.topHeap[0]
 	}
-	if t.topHeap[0] &gt; t.topHeap[1] {
+	if t.topHeap[0] > t.topHeap[1] {
 		t.topHeap[0], t.topHeap[1] = t.topHeap[1], t.topHeap[0]
 	}
 }
@@ -135,16 +124,16 @@ func (t *TopHeapSorting) Sorting() {
  */
 func (t *TopHeapSorting) rebuildTopHeap(endIndex uint64)  {
 	// 奇数 左子树
-	if endIndex &amp; 1 != 0 {
-		sortTree(&amp;t.topHeap[(endIndex - 2) / 2],
-			&amp;t.topHeap[endIndex],
+	if endIndex & 1 != 0 {
+		sortTree(&t.topHeap[(endIndex - 2) / 2],
+			&t.topHeap[endIndex],
 			nil)
 		endIndex--
 	}
-	for ; endIndex &gt; 1; endIndex -= 2 {
-		sortTree(&amp;t.topHeap[(endIndex - 2) / 2],
-			&amp;t.topHeap[endIndex - 1],
-			&amp;t.topHeap[endIndex])
+	for ; endIndex > 1; endIndex -= 2 {
+		sortTree(&t.topHeap[(endIndex - 2) / 2],
+			&t.topHeap[endIndex - 1],
+			&t.topHeap[endIndex])
 	}
 }
 
@@ -153,16 +142,16 @@ func (t *TopHeapSorting) rebuildTopHeap(endIndex uint64)  {
  */
 func sortTree(root *uint64, left *uint64, right *uint64) {
 	if right == nil {
-		if *root &lt; *left {
+		if *root < *left {
 			*root, *left = *left, *root
 		}
 	} else {
-		if *left &gt; *right {
-			if *root &lt; *left {
+		if *left > *right {
+			if *root < *left {
 				*root, *left = *left, *root
 			}
 		} else {
-			if *root &lt; *right {
+			if *root < *right {
 				*root, *right = *right, *root
 			}
 		}
@@ -174,7 +163,7 @@ func main() {
 		fmt.Println(http.ListenAndServe("localhost:7000", nil))
 	}()
 	var t TopHeapSorting
-	for i := 0; i &lt; 500000; i++ {
+	for i := 0; i < 500000; i++ {
 		r := rand.Uint64()
 		t.AddElements(r)
 	}

@@ -2,16 +2,13 @@
 aliases:
 - /archives/1176
 categories:
-- 云计算
+- 概论
 date: 2020-03-14 08:07:52+00:00
 draft: false
 title: 什么是云原生？
 ---
 
 CNCF废话了一大堆，看的迷迷糊糊。本文结合实际应用场景和我对云原生的理解，解释了云原生所包含的技术要点，如容器、服务网格、微服务等，对云原生的整体进行了一定的阐述。
-
-<!--more 阅读更多-->
-
 
 ## 感谢
 
@@ -48,21 +45,15 @@ CNCF对于云原生v1.0的定义是：
 
 在nirmata的官网上，我看到了其对于云原生应用更直接的解释：
 
-<blockquote class="wp-block-quote">
-<p>
-<strong><em>The Application is composed of multiple services</em></strong>: what looks like a single application to the end user, for example a Software-as-a-Service (SaaS) human resources application, or a streaming music service, is actually delivered by a set of co-operating services. Clients interact with the application as a whole; typically via a single API. However, internally the application is made up of multiple cooperating services, much like an object-oriented application is made up of multiple cooperating objects.
-  </p>
-<p>
-<strong><em>Each service is elastic</em></strong>: this means that each service can scale-up or scale-down independently of other services. Ideally the scaling is automatic, based on load or other defined triggers. Cloud computing costs are typically based on usage, and being able to dynamically manage scalability in a granular manner enables efficient use of the underlying resources.
-  </p>
-<p>
-<strong><em>Each service is resilient</em></strong>: this means that each service is highly-available and can survive infrastructure failures. This characteristic limits the failure domain, due to software bugs or hardware issues.
-  </p>
-<p>
-<strong><em>Each service is composable</em></strong>: this implies that the service is designed to allow it to be part of other applications. At the minimum, each Service has an Application Programming Interface (API) that is uniform and discoverable, and in addition can have well defined behaviors for registration, discovery, and request management.
-  </p>
-<cite>Cloud native software: key characteristics – nirmata</cite>
-</blockquote>
+> <strong><em>The Application is composed of multiple services</em></strong>: what looks like a single application to the end user, for example a Software-as-a-Service (SaaS) human resources application, or a streaming music service, is actually delivered by a set of co-operating services. Clients interact with the application as a whole; typically via a single API. However, internally the application is made up of multiple cooperating services, much like an object-oriented application is made up of multiple cooperating objects.
+> 
+> <strong><em>Each service is elastic</em></strong>: this means that each service can scale-up or scale-down independently of other services. Ideally the scaling is automatic, based on load or other defined triggers. Cloud computing costs are typically based on usage, and being able to dynamically manage scalability in a granular manner enables efficient use of the underlying resources.
+> 
+> <strong><em>Each service is resilient</em></strong>: this means that each service is highly-available and can survive infrastructure failures. This characteristic limits the failure domain, due to software bugs or hardware issues.
+> 
+> <strong><em>Each service is composable</em></strong>: this implies that the service is designed to allow it to be part of other applications. At the minimum, each Service has an Application Programming Interface (API) that is uniform and discoverable, and in addition can have well defined behaviors for registration, discovery, and request management.
+> 
+> Cloud native software: key characteristics – nirmata
 
 让我们一起来解读一下这四个定义：
 
@@ -71,35 +62,21 @@ CNCF对于云原生v1.0的定义是：
   * **每个服务都具有容错能力：**众所周知，系统由原本的整体拆分成微服务后，通过服务发现和服务注册、服务网格等后，具备了一定的健康检查能力（其实也就是一个TTL，当你心跳没了超过TTL后你这个节点就被剔除了，暂且先理解到服务注册和服务发现，对于服务网格的原理我还没了解到），那么任何一个服务挂了的情况下，服务网格拥有在其他节点继续尝试的能力，因此说单个服务gg后不影响整体运作，每个服务都因此具有一定的容错能力
   * **每个服务都是可以互相构成的：**我觉得这个标题我翻译的不是太好，原意是说这个独立的服务，可以被挪去构成其他的应用，就相当于很多的系统可以相符复用这些小的组件，前提是它们能够兼容
 
-<hr class="wp-block-separator"/>
-
 ## 服务网格
 
 我觉得，在正式开始讲述云原生之前，需要着重了解一下服务网格，比较有代表性的是Istio，该软件当前已经在Kubernetes中集成。
 
 从官方的介绍来看，Istio主要是为了解决众多微服务在部署和管理中的问题：连接、安全、控制和观察。其内置了日志、遥测和策略系统，用于运行分布式的微服务系统。
 
-<blockquote class="wp-block-quote">
-<p>
-    Istio makes it easy to create a network of deployed services with load balancing, service-to-service authentication, monitoring, and more, with <a href="https://istio.io/docs/tasks/observability/distributed-tracing/overview/#trace-context-propagation">few</a> or no code changes in service code. You add Istio support to services by deploying a special sidecar proxy throughout your environment that intercepts all network communication between microservices, then configure and manage Istio using its control plane functionality, which includes:
-  </p>
-<p>
-    * Automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic.
-  </p>
-<p>
-    * Fine-grained control of traffic behavior with rich routing rules, retries, failovers, and fault injection.
-  </p>
-<p>
-    * A pluggable policy layer and configuration API supporting access controls, rate limits and quotas.
-  </p>
-<p>
-    * Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress.
-  </p>
-<p>
-    * Secure service-to-service communication in a cluster with strong identity-based authentication and authorization.
-  </p>
-<cite>Why use Istio? – Istio 1.5</cite>
-</blockquote>
+> Istio makes it easy to create a network of deployed services with load balancing, service-to-service authentication, monitoring, and more, with <a href="https://istio.io/docs/tasks/observability/distributed-tracing/overview/#trace-context-propagation">few</a> or no code changes in service code. You add Istio support to services by deploying a special sidecar proxy throughout your environment that intercepts all network communication between microservices, then configure and manage Istio using its control plane functionality, which includes:
+> 
+> * Automatic load balancing for HTTP, gRPC, WebSocket, and TCP traffic.
+> * Fine-grained control of traffic behavior with rich routing rules, retries, failovers, and fault injection.
+> * A pluggable policy layer and configuration API supporting access controls, rate limits and quotas.
+> * Automatic metrics, logs, and traces for all traffic within a cluster, including cluster ingress and egress.
+> * Secure service-to-service communication in a cluster with strong identity-based authentication and authorization.
+> 
+> Why use Istio? – Istio 1.5
 
 从上边官方的解释中，可以看到，其拥有这些功能：
 
@@ -111,13 +88,9 @@ CNCF对于云原生v1.0的定义是：
 
 关于更详细的内容，去查阅官方文档吧
 
-<hr class="wp-block-separator"/>
-
 ## 微服务和容器
 
 这两个概念相对来说简单很多，应该很多人都知道，在此就不解释了。
-
-<hr class="wp-block-separator"/>
 
 ## 结构对比
 
@@ -131,14 +104,12 @@ CNCF对于云原生v1.0的定义是：
 
 那么再回归到最开始地方——用户的请求如何进入，这个问题。当用户在客户端准备发出一个请求时，会先通过DNS解析其域名。这个域名的解析可以使用自主的DNS服务器，那么这样就实现了在DNS上实现的负载均衡——可以跟随网关压力自动解析到不同的网关去。
 
-咋一听，觉得服务网格所实现的，和软件定义网络颇为相似，对此我专程去查了查，有张图觉得很不错，贴上来大家看看<figure class="wp-block-image size-large">
+咋一听，觉得服务网格所实现的，和软件定义网络颇为相似，对此我专程去查了查，有张图觉得很不错，贴上来大家看看
 
 ![图片](./0_p3rX_L1JXKAvBvH0.jpg)
- <figcaption>Comparison between SDN and Service Mesh – Medium</figcaption></figure> 
+Comparison between SDN and Service Mesh – Medium
 
 我个人觉得这张图非常好，众所周知，网络按照OSI标准分为7层，分别简写为L1-L7。在SDN中，以标准OpenFlow协议为准，其覆盖的参数也是L1-L4，对于再高层的协议，即不再支持（暂且先不考虑ARP和DHCP应答等）。那么服务网格就恰到好处得实现了这么个鬼东西，L4的服务网格，个人理解起来应该算是网关了，L7和L7+（这个时服务网格中的定义，OSI中没有L7+的不要想太多）分别对应了头和消息体，通过软件定义的方法，实现更为细粒度的行动控制（好比路由、访问控制等），和SDN简直是系出同门。
-
-<hr class="wp-block-separator"/>
 
 ## 推荐阅读
 
@@ -150,7 +121,7 @@ CNCF对于云原生v1.0的定义是：
 
 文章来源于Medium，标题是服务网格可以从SDN中学到什么，从中可以比较细致得看出其差别，非常推荐
 
-<https: @zhaohuabing="" medium.com="" what-can-service-mesh-learn-from-sdn-1a4874edca03="">
+https://medium.com/@zhaohuabing/what-can-service-mesh-learn-from-sdn-1a4874edca03
 
 ### 宋净超的网站
 
@@ -158,29 +129,27 @@ CNCF对于云原生v1.0的定义是：
 
 推荐他的两本书，一本是Go语言实现大规模云原生应用的方式，一本是Istio服务网格的实践进阶：
 
-  * <https: book="" cloud-native-go="" jimmysong.io=""></https:> 
-  * <https: book="" istio-handbook="" jimmysong.io=""></https:> 
+* https://jimmysong.io/book/cloud-native-go/
+* https://jimmysong.io/book/istio-handbook/
 
 关于其的文章也非常推荐阅读：
 
-  * <https: cloud-native="" from-kubernetes-to-cloud-native.html="" jimmysong.io="" kubernetes-handbook=""> 
-  * <https: concepts="" jimmysong.io="" kubernetes-handbook="" open-interfaces.html=""> 
+* https://jimmysong.io/kubernetes-handbook/cloud-native/from-kubernetes-to-cloud-native.html
+* https://jimmysong.io/kubernetes-handbook/concepts/open-interfaces.html
 
 建议有空有心情最好把整个GitBook都看一遍。
 
 最后，再推荐一下ServiceMesher社区的GitBook，其实也有Jimmy Song的产出：
 
-<https: concepts-and-principle="" istio-handbook="" service-mesh-patterns.html="" www.servicemesher.com="">
-<hr class="wp-block-separator"/>
+https://www.servicemesher.com/istio-handbook/concepts-and-principle/service-mesh-patterns.html
 
 ## 最后推荐：云原生的整体布局
 
 建议使用电脑浏览，内容非常庞大
 
-<https: landscape.cncf.io=""></https:>
-<hr class="wp-block-separator"/>
+https://landscape.cncf.io/
 
 ## 参考资料
 
-  * <https: blob="" cncf="" definition.md="" github.com="" master="" toc=""> 
-  * <https: 05="" 20="" 2014="" cloud-native-software-key-characteristics="" www.nirmata.com=""></https:></https:></https:></https:></https:></https:>
+* https://github.com/cncf/toc/blob/master/DEFINITION.md
+* https://www.nirmata.com/2014/05/20/cloud-native-software-key-characteristics/
