@@ -5,7 +5,7 @@ footnoteReturnLinkContents: ↩
 title: 雪糕博客
 enableEmoji: true
 # 每页最多文章数
-paginate: 10
+paginate: 6
 # 摘要长度
 summaryLength: 100
 timeZone: Asia/Hong_Kong
@@ -28,19 +28,25 @@ minify:
   minifyOutput: true
 
 params:
+  # 雪糕改动了原主题加上的功能
+  # 显示文章头部开关：这里放了公众号二维码
+  enableContentHeader: true
+  # 是否显示备案号
+  ChinaBeianNumber: 豫ICP备17025947号-1
+
+  # 下边开始则为主题原本参数
   assets:
     # 禁用主题自带的代码高亮，交给hugo内置的引擎完成
     # 内联高亮，有助于兼容微信公众号
     disableHLJS: true
   env: production
+  # 显示评论块
   comments: true
-  # 显示文章头部开关：这里放了公众号二维码
-  enableContentHeader: true
   languageCode: zh-CN
   defaultTheme: auto
   AuthorName: 雪糕
   GitHubUser: ic0xgkk
-  SidebarRecentLimit: 10
+  SidebarRecentLimit: 6
   Subtitle: 一位不愿意将就并且专注于网络技术的攻城狮的博客
   ShowReadingTime: false
   displayFullLangName: true
