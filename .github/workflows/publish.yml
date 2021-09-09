@@ -41,7 +41,8 @@ jobs:
       
       # 使用全球加速同步推送一次
       # 这个阶段同步删除时会报错，但是不影响继续执行
-      - name: Upload to Accelerate COS
+      # 国内源站COS
+      - name: Upload to Accelerate COS in China
         uses: XUEGAONET/tencent-cos-action@v0.2.0
         with:
           args: upload -rsf --delete ./public/ /
@@ -50,7 +51,8 @@ jobs:
           bucket: ${{ secrets.COS_BUCKET }}
 
       # 使用地域，再次同步推送一次。此时由于MD5验证都通过，因此只会删除本地已经不存在了的文件
-      - name: Sync Deleting
+      # 国内源站COS
+      - name: Sync Deleting in China
         uses: zkqiang/tencent-cos-action@v0.1.0
         with:
           args: upload -rsf --delete ./public/ /
@@ -58,3 +60,13 @@ jobs:
           secret_key: ${{ secrets.TENCENT_CLOUD_SECRET_KEY }}
           bucket: ${{ secrets.COS_BUCKET }}
           region: ap-guangzhou
+      
+      # 海外源站COS
+      - name: Sync to International COS
+        uses: zkqiang/tencent-cos-action@v0.1.0
+        with:
+          args: upload -rsf --delete ./public/ /
+          secret_id: ${{ secrets.TENCENT_CLOUD_SECRET_ID }}
+          secret_key: ${{ secrets.TENCENT_CLOUD_SECRET_KEY }}
+          bucket: ${{ secrets.COS_BUCKET_G }}
+          region: na-siliconvalley
