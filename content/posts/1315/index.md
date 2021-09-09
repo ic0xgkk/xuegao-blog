@@ -2,18 +2,13 @@
 aliases:
 - /archives/1315
 categories:
-- Go语言
-- 算法
+- 语言
 date: 2020-03-22 08:09:51+00:00
 draft: false
 title: Go KMP算法
 ---
 
 足够熟悉KMP原理的就不用看了。本篇的代码比较渣
-
-
-
-
 
 ## 前言
 
@@ -27,7 +22,7 @@ KMP算法主要适用于在某个指定的文本串中寻找是否存在特定�
 
 我看了文字内容讲述KMP，始终看不懂。看了油管的一个视频终于明白了，对强迫症患者非常友好，推荐搞不明白的可以看看实现原理
 
-<https: dgpabastfa8="" youtu.be="">
+https://youtu.be/dgPabAsTFa8
 
 ## 差别
 
@@ -43,21 +38,13 @@ KMP算法主要适用于在某个指定的文本串中寻找是否存在特定�
 
 由于身边没有数位板用（疫情在家，没开学），17的iPad又不支持Apple Pencil，因此暂时没有比较好的作图工具了，我就直接鼠标低DPI画好了，将就看吧
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large is-resized">
 ![图片](./image-5.png)
-</figure>
-</div>
 
 所谓计算前缀表，就是找出这个模式串的所有从头开始不同长度的子串（不含本身）中的最长公共前后缀大小。如上图，当子串长为1时，这个前缀的数值肯定是0，随后计算剩余的字串的最大前后缀长度即可，由于不包含本身，因此最后要补齐，要在前边补个-1，后续在失配时，这个-1决定了文本串索引号向后移并且归位模式串索引号
 
 我们再举个例子
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large is-resized">
 ![图片](./C10BB15A31F71993AE574DCB298D97A65264C2B05BE3F546BF6EF1CE921A2227.png)
-</figure>
-</div>
 
 其实所谓的计算最大前后缀长度，也解释了为什么KMP失配后可以继续移动模式串索引号进行前边位置（不一定是头）的匹配，其高效的来源就在这里。
 
@@ -80,7 +67,7 @@ KMP算法主要适用于在某个指定的文本串中寻找是否存在特定�
 需要特别注意的是，这个代码的逻辑虽然清晰，但是并不是最优的，不论时间复杂度还是空间复杂度，在leetcode都是垫底的，理解一下就好
 
 
-```
+```go
 package main
 
 import "fmt"
@@ -105,16 +92,16 @@ func New(p string) *KMP {
 	}
 	kmp.prefix = append(kmp.prefix, -1)
 	Len := len(kmp.pattern)
-	for i := 1; i &lt; Len; i++ {
+	for i := 1; i < Len; i++ {
 		kmp.prefix = append(kmp.prefix, getMaxRepeat(kmp.pattern[0:i], i))
 	}
-	return &amp;kmp
+	return &kmp
 }
 
 func getMaxRepeat(text string, Len int) int {
 	// 计算前缀表
 	// 因为要算最小的，不用分奇偶
-	for i := 1; i &lt;= Len - 1; i++ {
+	for i := 1; i <= Len - 1; i++ {
 		if text[0 : Len - i] == text[i : Len] {
 			return Len - i
 		}
@@ -128,7 +115,7 @@ func (k *KMP) Search(text string) int {
 	textLen := len(text)
 
 	if patLen == 1 {
-		for i := 0; i &lt; textLen; i++ {
+		for i := 0; i < textLen; i++ {
 			if k.pattern[0] == text[i] {
 				return i
 			}
@@ -138,7 +125,7 @@ func (k *KMP) Search(text string) int {
 
 	// 索引号
 	j := 0
-	for i := 0; i &lt; textLen; {
+	for i := 0; i < textLen; {
 		// 如果匹配则继续向下
 		if text[i] == k.pattern[j] {
 			// 判断一下已经匹配的模式串是不是够了
@@ -175,15 +162,28 @@ func main() {
 leetcode给了个优秀例程，看了我惊了，怎么这么短
 
 
-```
+```go
 func strStr(haystack string, needle string) int {
     if needle == "" {
         return 0
     }
-    for i:=0; i<len(haystack); :="i" i++="" if="" len(needle)="" start="" {=""> len(haystack) - i {
+    for i:=0; i<len(haystack); i++ {
+        start := i
+        if len(needle) > len(haystack) - i {
             return -1
         }
-        for j:=0; j<len(needle); !="haystack[start]" +="1" -="" -1="" break="" code="" i="" if="" j++="" needle[j]="" return="" start="" {="" }="" }<=""></len(needle);></len(haystack);>
+        for j:=0; j<len(needle); j++ {
+            if needle[j] != haystack[start] {
+                break
+            }
+            start += 1
+        }
+        if start - i == len(needle) {
+            return i
+        }
+    }
+    return -1
+}
 ```
 
 
@@ -198,39 +198,25 @@ func strStr(haystack string, needle string) int {
 我怎么估摸着这一点也不像KMP……..是不是我又把KMP的场景用错了，搞得还不如这种暴力匹配…..
 
 ## 场景比对
-~~等我查点资料再回来填坑~~
-<blockquote class="wp-block-quote">
-<p>
-    KMP算法，在较少字符串的情况下进行匹配，相比朴素算法是毫无优势可言的，因为next数组推算，也是需要增加计算成本的。
-  </p>
-<cite>算法大法好之KMP – 掘金</cite>
-</blockquote>
-<blockquote class="wp-block-quote">
-<p>
-    BF：简单场景，主串和模式串都不太长，O(m*n)
-  </p>
-<p>
-    KP：字符集范围不要太大且模式串不要太长，否则hash值可能冲突，O(n)
-  </p>
-<p>
-    naive-BM：模式串最好不要太长（因为预处理较重），比如IDE编辑器里的查找场景； 预处理O(m*m)， 匹配O(n)， 实现较复杂，需要较多额外空间
-  </p>
-<p>
-    KMP：适合所有场景，整体实现起来也比BM简单，O(n+m)，仅需一个next数组的O(n)额外空间；但统计意义下似乎BM更快，原因不明
-  </p>
-<p>
-    另外查资料的时候还看到一种比BM/KMP更快，且实现+理解起来都更容易的的Sunday算法
-  </p>
-<cite><strong>单模式串匹配 </strong>– 36讲AC自动机：如何用多模式串匹配实现敏感词过滤功能</cite>
-</blockquote>
-<blockquote class="wp-block-quote">
-<p>
-    naive-Trie：适合多模式串公共前缀较多的匹配(O(n*k)) 或者 根据公共前缀进行查找(O(k))的场景，比如搜索框的自动补全提示.
-  </p>
-<p>
-    AC自动机：适合大量文本中多模式串的精确匹配查找，可以到O(n)
-  </p>
-<cite><strong>多模式串匹配</strong> – 36讲AC自动机：如何用多模式串匹配实现敏感词过滤功能</cite>
-</blockquote>
+> KMP算法，在较少字符串的情况下进行匹配，相比朴素算法是毫无优势可言的，因为next数组推算，也是需要增加计算成本的。
+> 
+> 算法大法好之KMP – 掘金</cite>
 
-晚点再看看Sunday、AC自动机和BM</https:>
+> BF：简单场景，主串和模式串都不太长，O(m*n)
+> 
+> KP：字符集范围不要太大且模式串不要太长，否则hash值可能冲突，O(n)
+> 
+> naive-BM：模式串最好不要太长（因为预处理较重），比如IDE编辑器里的查找场景； 预处理O(m*m)， 匹配O(n)， 实现较复杂，需要较多额外空间
+> 
+> KMP：适合所有场景，整体实现起来也比BM简单，O(n+m)，仅需一个next数组的O(n)额外空间；但统计意义下似乎BM更快，原因不明
+> 
+> 另外查资料的时候还看到一种比BM/KMP更快，且实现+理解起来都更容易的的Sunday算法
+> 
+> 单模式串匹配 </strong>– 36讲AC自动机：如何用多模式串匹配实现敏感词过滤功能
+
+> naive-Trie：适合多模式串公共前缀较多的匹配(O(n*k)) 或者 根据公共前缀进行查找(O(k))的场景，比如搜索框的自动补全提示.
+> 
+> AC自动机：适合大量文本中多模式串的精确匹配查找，可以到O(n)
+> 
+> <strong>多模式串匹配</strong> – 36讲AC自动机：如何用多模式串匹配实现敏感词过滤功能
+

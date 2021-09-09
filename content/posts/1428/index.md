@@ -8,43 +8,39 @@ draft: false
 title: OVSOF环境使用指南
 ---
 
-OVSOF全称Open vSwitch &amp; OpenFlow Environment，即是一个封装好的Open vSwitch（含OpenFlow支持）、同时集成了DPDK、集成了Docker OVS组件。该环境可以直接导入到VMware Workstation中，然后免部署了解和学习OpenFlow等SDN和容器相关内容。
-
-
-
-
+OVSOF全称Open vSwitch & OpenFlow Environment，即是一个封装好的Open vSwitch（含OpenFlow支持）、同时集成了DPDK、集成了Docker OVS组件。该环境可以直接导入到VMware Workstation中，然后免部署了解和学习OpenFlow等SDN和容器相关内容。
 
 ## 版本状态
 
-**当前版本号：**v1.0
+**当前版本号：** v1.0
 
-**最后更新：**2020年3月29日
+**最后更新：** 2020年3月29日
 
 Changelog在末尾
 
 ## 下载方式
 
-**Sourceforge：**[https://sourceforge.net/projects/xuegao-ov][1]<a href="https://sourceforge.net/projects/xuegao-ovsof/files/" rel="noreferrer noopener" target="_blank">sof/files/</a>
+**Sourceforge：** https://sourceforge.net/projects/xuegao-ovsof/files/
 
 由于OVSOF环境体积较大，单独提供CDN分发成本太高，因此后续更新会全部托管于Sourceforge。由于这家服务器基本都在海外，如遇无法打开或者速度缓慢等问题，请自备梯子（不提供相关内容的解答）
 
 ## 集成组件
 
-**Open vSwitch：**2.12.0
+**Open vSwitch：** 2.12.0
 
-**DPDK：**19.11
+**DPDK：** 19.11
 
-**OpenFlow Support：**1.0 – 1.5 with full support
+**OpenFlow Support：** 1.0 – 1.5 with full support
 
-**Docker：**19.03.8
+**Docker：** 19.03.8
 
-**基础镜像：**CentOS Linux release 8.1.1911 (Core)
+**基础镜像：** CentOS Linux release 8.1.1911 (Core)
 
 ## 默认登录
 
-**用户名：**root
+**用户名：** root
 
-**密码：**1111
+**密码：** 1111
 
 ## 注意
 
@@ -93,12 +89,10 @@ Changelog在末尾
 
 无论任何时候，都推荐阅读官方的文档，获得第一手的资料，会使你学习效率大大提升并且规避掉很多坑。官方资料多为英文，不过语法和词汇都是一些常用词，慢慢看习惯就好了，更何况当今机器智能翻译这么发达，即便有些表达看不懂，借助这些翻译也可以很好的理解
 
-**Open vSwicth文档（含DPDK、OF使用指南）：**<a href="http://docs.openvswitch.org/en/latest/" rel="noreferrer noopener" target="_blank">http://docs.openvswitch.org/en/latest/</a>
+**Open vSwicth文档（含DPDK、OF使用指南）：** http://docs.openvswitch.org/en/latest/
 
-**Ryu文档（开源SDN控制器）：**<a href="https://ryu.readthedocs.io/en/latest/index.html" rel="noreferrer noopener" target="_blank">https://ryu.readthedocs.io/en/latest/index.html</a>
+**Ryu文档（开源SDN控制器）：** https://ryu.readthedocs.io/en/latest/index.html
 
-**Docker文档：**<a href="https://docs.docker.com/" rel="noreferrer noopener" target="_blank">https://docs.docker.com/</a>
+**Docker文档：** https://docs.docker.com/
 
 不得不说docker的文档是我目前看的所有里边觉得最好的，非常直观。对于普通用户来说想熟练使用docker的话，完整阅读其文档非常有必要
-
- [1]: https://sourceforge.net/projects/xuegao-ovsof/files/

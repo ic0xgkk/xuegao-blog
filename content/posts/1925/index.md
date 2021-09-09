@@ -165,7 +165,7 @@ l2fwd_mac_updating(struct rte_mbuf *m, unsigned dest_portid)
 
 图片字太小不方便看的话，可以图片右键新窗口打开就好啦~
 
-在这个测试过程中，命令直接参考官方的[^5][^6]即可，不要忘记使用大页就好了。
+在这个测试过程中，命令直接参考官方的[^5]和[^6]即可，不要忘记使用大页就好了。
 
 [^5]: L2 Forwarding Tests. https://doc.dpdk.org/dts/test_plans/l2fwd_test_plan.html
 [^6]: Running the Application. https://doc.dpdk.org/guides/testpmd_app_ug/run_app.html

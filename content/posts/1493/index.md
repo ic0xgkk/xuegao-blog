@@ -59,14 +59,9 @@ iBGP成员不允许向其他iBGP成员重分布路由（即只能接收来自Pee
 
 ## BGP路由安装流程
 
-BGP进程 -&gt; RIB -&gt; FIB，有一个图如下：<figure class="wp-block-gallery columns-1 is-cropped">
-<ul class="blocks-gallery-grid">
-<li class="blocks-gallery-item">
-<figure>
+BGP进程 -&gt; RIB -&gt; FIB，有一个图如下：
+
 ![图片](./1608194242-1.png)
-</figure>
-</li>
-</ul></figure> 
 
 图片出处：https://bidsarmanish.blogspot.com/2017/01/rib-vs-fib.html
 
@@ -80,10 +75,9 @@ BGP进程 -&gt; RIB -&gt; FIB，有一个图如下：<figure class="wp-block-gal
 
 单播即unicast，即通告的地址是单播地址，不包含其他东西。
 
-VPNv4地址中包含RD（Route Distinguisher）和RT（Route Target），RD和VRF绑定（一个BRF只允许有一个RD），RT是路由标识，用于标识VRF中路由的条目。具体的关系可以看下边这个图（手绘，将就一下）：<figure class="wp-block-image size-large">
+VPNv4地址中包含RD（Route Distinguisher）和RT（Route Target），RD和VRF绑定（一个BRF只允许有一个RD），RT是路由标识，用于标识VRF中路由的条目。具体的关系可以看下边这个图（手绘，将就一下）：
 
-![图片](./未命名图片.png)
- </figure> 
+![图片](./image.png)
 
 同RD的路由进入RR后会进入一张路由表，然后进行路由筛选，最优路由会反射回去到Peer（已经是最优路由的Peer不反射，如上图，假如R1中的VRF 1已经是最优路由，那么RR只会反射路由到R2的VRF1，不会再反射回R1的VRF1）。RR会接收所有的Peer的所有RD，因此RR在IGP内处于比较核心的位置，同时RR还会将整合过的所有RD通告回各个Peer，所以IGP内RR一定要有备份
 

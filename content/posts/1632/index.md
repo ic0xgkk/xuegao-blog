@@ -10,11 +10,7 @@ title: 云上搬砖——Code Server落地实践
 
 如今2020年了，甚至都可以说2021年了，在行业一直推行“上云”的这一背景下，越来越多的企业服务开始从私有云转移到了公有云上。在企业纷纷上云提高自身效率的同时，我也一直在想有什么办法来提高个人的开发效率呢？写个代码一直都强调高内聚低耦合，我们的生产力工具和开发系统本来也就要进行解耦，以避免掉太多对终端设备的依赖，来应对突发状况下或者一些特殊的环境依赖需要。今天，无意中发现了一个新的东西——Code Server，即一个VS Code的网页端，也是一个开源软件，借助Code Server，终于有了一个完全托管于云上、无需再过多依赖本地终端的环境。
 
-
-
 当然，Code Server现在刚刚上线还没几天，因此暂且不评价是否真正能和本地端IDE媲美，受到网络延迟影响，在线的IDE一定会相对本地端IDE有一定的延迟，但是初步使用，其已经能够满足绝大多数需要，是个非常棒的云上生产工具。
-
-
 
 ## 服务器选型
 
@@ -43,7 +39,7 @@ title: 云上搬砖——Code Server落地实践
 拿到服务器的第一步，就是先打开SSH，并且禁用掉Lighthouse的网页终端。
 
 
-```
+```bash
 # 编辑SSH服务配置
 vim /etc/ssh/sshd_config
 # 重启SSH服务（daemon）
@@ -109,7 +105,7 @@ systemctl disable --now NetworkManager
 vim /etc/sysctl.conf
 
 # 放开文件描述符限制
-cat &gt; /etc/security/limits.conf &lt;&lt; EOF
+cat > /etc/security/limits.conf << EOF
 * soft     nproc          65535
 * hard     nproc          65535
 * soft     nofile         65535
@@ -122,7 +118,6 @@ yum --enablerepo=elrepo-kernel install kernel-ml
 
 # 生成新的grub配置
 grub2-mkconfig -o /boot/grub2/grub.cfg
-
 
 ```
 
@@ -144,9 +139,9 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 修改SSH配置主要是为了修改默认的端口，以避免大规模暴力破解时能不被扫到，其次腾讯云轻量默认禁用了SSH服务（不允许密码连接），因此要手动打开，其次要再调整一些配置。以下配置仅供参考，需要结合实际环境做出一些调整。
 
 
-```
-Port &lt;端口号&gt;
-ListenAddress &lt;监听地址&gt;
+```conf
+Port <端口号>
+ListenAddress <监听地址>
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
@@ -155,8 +150,8 @@ SyslogFacility AUTHPRIV
 # 根据实际需要决定是否需要开启
 PermitRootLogin no
 
-MaxAuthTries &lt;最大重试次数&gt;
-MaxSessions &lt;最大会话数&gt;
+MaxAuthTries <最大重试次数>
+MaxSessions <最大会话数>
 AuthorizedKeysFile .ssh/authorized_keys
 PasswordAuthentication yes
 ChallengeResponseAuthentication no
@@ -180,8 +175,7 @@ AcceptEnv XMODIFIERS
 Subsystem sftp  /usr/libexec/openssh/sftp-server
 
 # 限定特定的用户
-AllowUsers &lt;用户名&gt;
-
+AllowUsers <用户名>
 ```
 
 
@@ -190,7 +184,7 @@ AllowUsers &lt;用户名&gt;
 默认的配置中会有serial的内容，启动的日志（包括login）会通过serial进行输出（或者输入）。这可能会导致未经授权的访问，因此建议禁用。直接修改/etc/default/grub即可，具体修改内容参考如下：
 
 
-```
+```ini
 # 等待时间
 GRUB_TIMEOUT=1
 GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
@@ -206,8 +200,6 @@ GRUB_TERMINAL_OUTPUT="console"
 GRUB_CMDLINE_LINUX="crashkernel=auto console=ttyS0 console=tty0 panic=5 net.ifnames=0 biosdevname=0 intel_idle.max_cstate=1 intel_pstate=disable"
 GRUB_DISABLE_RECOVERY="true"
 GRUB_ENABLE_BLSCFG=true
-
-
 ```
 
 
@@ -216,7 +208,7 @@ GRUB_ENABLE_BLSCFG=true
 对比官方的配置，做出了少部分改动，具体参考如下
 
 
-```
+```ini
 # 禁用IPv6，暂且用不上
 net.ipv6.conf.all.disable_ipv6=1
 net.ipv6.conf.default.disable_ipv6=1
@@ -241,7 +233,7 @@ net.ipv4.tcp_congestion_control=bbr
 此处开始安装Code Server，详细文档请参考官方所述：https://github.com/cdr/code-server/blob/v3.8.0/doc/install.md
 
 
-```
+```bash
 # 下载并安装
 curl -fOL https://github.com/cdr/code-server/releases/download/v3.8.0/code-server-3.8.0-amd64.rpm
 dnf install ./code-server-3.8.0-amd64.rpm
@@ -256,11 +248,10 @@ vim /etc/systemd/system/code-server.service
 # 生成配置文件
 # 路径需要根据自身变化进行更正
 mkdir /home/harris/.config/code-server -p
-cat &gt; /home/harris/.config/code-server/config.yaml
- &lt;&lt; EOF
+cat > /home/harris/.config/code-server/config.yaml << EOF
 bind-addr: 127.0.0.1:9999
 auth: password
-password: &lt;设置的密码&gt;
+password: <设置的密码>
 cert: false
 EOF
 chown harris:harris /home/harris -R
@@ -276,7 +267,7 @@ systemctl enable --now code-server
 参考的systemd service配置：
 
 
-```
+```ini
 [Unit]
 Description=code-server
 After=network.target
@@ -294,12 +285,12 @@ WantedBy=default.target
 
 ## 安装nginx
 
-```
+```bash
 yum install yum-utils
 
 # 安装repo
-cat &gt; /etc/yum.repos.d/nginx.repo
- &lt;&lt; EOF
+cat > /etc/yum.repos.d/nginx.repo
+ << EOF
 [nginx-stable]
 name=nginx stable repo
 baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
@@ -325,8 +316,8 @@ yum install nginx
 openssl dhparam -dsaparam -out /etc/nginx/dhparam.pem 4096
 
 # 生成nginx.conf配置
-cat &gt; /etc/nginx/nginx.conf
- &lt;&lt; EOF
+cat > /etc/nginx/nginx.conf
+ << EOF
 user  nginx;
 worker_processes  2;
 
@@ -394,8 +385,8 @@ http {
 EOF
 
 # 设置反代参数
-cat &gt; /etc/nginx/cdr-proxy.conf
- &lt;&lt; EOF
+cat > /etc/nginx/cdr-proxy.conf
+ << EOF
 proxy_connect_timeout 300s;
 proxy_send_timeout   300s;
 proxy_read_timeout   300s;
@@ -413,8 +404,8 @@ proxy_set_header   X-Forwarded-For $http_x_forwarded_for;
 proxy_set_header   X-Forwarded-Proto $scheme;
 EOF
 
-cat &gt; /etc/nginx/conf.d/code-server.conf
- &lt;&lt; EOF
+cat > /etc/nginx/conf.d/code-server.conf
+ << EOF
 server {
     listen       443 ssl http2;
     server_name  code.xuegaogg.com;
@@ -443,42 +434,40 @@ EOF
 passwd harris
 # 添加到sudoer中
 vim /etc/sudoers
-
 ```
 
+在生成DH密钥的时候，一开始使用`openssl dhparam -out dhparam.pem 4096`生成，结果等啊等啊等，刷了个牙洗了个脸，顺带刷了会朋友圈，还没生成完。于是去Google查了下，得到的答案是——openssl在生成DH时会尽可能确保生成的为“强质数(strong prime)”，这对安全并没有起到太大帮助反而会耗费非常多的CPU时间来计算。至于开销的时间呢，Google搜索结果里，我看到了一个after 24 hours….所以建议还是不要这样用了。解决办法就是，加一个`-dsaparam`选项。
 
-在生成DH密钥的时候，一开始使用`openssl dhparam -out dhparam.pem 4096`生成，结果等啊等啊等，刷了个牙洗了个脸，顺带刷了会朋友圈，还没生成完。于是去Google查了下，得到的答案是——openssl在生成DH时会尽可能确保生成的为“强质数(strong prime)”，这对安全并没有起到太大帮助反而会耗费非常多的CPU时间来计算。至于开销的时间呢，Google搜索结果里，我看到了一个after 24 hours….所以建议还是不要这样用了。解决办法就是，加一个`-dsaparam`选项。<figure class="wp-block-pullquote">
-
-&gt; If openssl uses a lot of CPU then it is not blocked waiting for “entropy”. OpenSSL is actually sane in that respect, and uses a cryptographically secure PRNG to extend an initial seed into as many bits as it needs.
-&gt; 
-&gt; When you use dhparam, OpenSSL not only generates DH parameters; it also wants to assert his social status by taking care to use for the modulus a so-called “strong prime”, which is useless for security but requires an awful lot more computational effort. A “strong prime” is a prime p such that (p-1)/2 is also prime. The prime generation algorithm looks like this:
-&gt; 
-&gt; * Generate a random odd integer p.
-&gt; 
-&gt; * Test whether p is prime. If not, loop.
-&gt; 
-&gt; * Test whether (p-1)/2 is prime. If not, loop.
-&gt; 
-&gt; Random odd 4096-bit integers are probability about 1/2000 to be prime, and since both p and (p-1)/2 must be prime, this will need on average generating and testing for primality about 4 millions of odd primes. This is bound to take some time.
-&gt; 
-&gt; When going from 2048-bit to 4096-bit, the density of strong primes is divided by 4, and the primality tests will also be about 4 times slower, so if generating a 2048-bit DH modulus takes 1 hour on average, the same machine with the same software will use an average of 16 hours for a 4096-bit DH modulus. This is only averages; each individual generation may be faster or slower, depending on your luck.
-&gt; 
-&gt; The reasonable solution would be to add the `-dsaparam` option.
-&gt; 
-&gt; `openssl dhparam -dsaparam -out /etc/ssl/private/dhparam.pem 4096`
-&gt; 
-&gt; This option instructs OpenSSL to produce “DSA-like” DH parameters (p is such that p-1 is a multiple of a smaller prime q, and the generator has multiplicative order q). This is considerably faster because it does not need to nest the primality tests, and thus only thousands, not millions, of candidates will be generated and tested.
-&gt; 
-&gt; As far as academics know, DSA-like parameters for DH are equally secure; there is no actual advantage to using “strong primes” (the terminology is traditional and does not actually imply some extra strength).
-&gt; 
-&gt; Similarly, you may also use a 2048-bit modulus, which is already very far into the “cannot break it zone”. The 4096-bit modulus will make DH computations slower (which is not a real problem for a VPN; these occur only at the start of the connection), but won’t actually improve security.
-&gt; 
-&gt; <cite>出处：https://security.stackexchange.com/questions/95178/diffie-hellman-parameters-still-calculating-after-24-hours</cite></figure> 
+> If openssl uses a lot of CPU then it is not blocked waiting for “entropy”. OpenSSL is actually sane in that respect, and uses a cryptographically secure PRNG to extend an initial seed into as many bits as it needs.
+> 
+> When you use dhparam, OpenSSL not only generates DH parameters; it also wants to assert his social status by taking care to use for the modulus a so-called “strong prime”, which is useless for security but requires an awful lot more computational effort. A “strong prime” is a prime p such that (p-1)/2 is also prime. The prime generation algorithm looks like this:
+> 
+> * Generate a random odd integer p.
+> 
+> * Test whether p is prime. If not, loop.
+> 
+> * Test whether (p-1)/2 is prime. If not, loop.
+>
+> Random odd 4096-bit integers are probability about 1/2000 to be prime, and since both p and (p-1)/2 must be prime, this will need on average generating and testing for primality about 4 millions of odd primes. This is bound to take some time.
+> 
+> When going from 2048-bit to 4096-bit, the density of strong primes is divided by 4, and the primality tests will also be about 4 times slower, so if generating a 2048-bit DH modulus takes 1 hour on average, the same machine with the same software will use an average of 16 hours for a 4096-bit DH modulus. This is only averages; each individual generation may be faster or slower, depending on your luck.
+> 
+> The reasonable solution would be to add the -dsaparam option.
+> 
+> openssl dhparam -dsaparam -out /etc/ssl/private/dhparam.pem 4096
+> 
+> This option instructs OpenSSL to produce “DSA-like” DH parameters (p is such that p-1 is a multiple of a smaller prime q, and the generator has multiplicative order q). This is considerably faster because it does not need to nest the primality tests, and thus only thousands, not millions, of candidates will be generated and tested.
+> 
+> As far as academics know, DSA-like parameters for DH are equally secure; there is no actual advantage to using “strong primes” (the terminology is traditional and does not actually imply some extra strength).
+> 
+> Similarly, you may also use a 2048-bit modulus, which is already very far into the “cannot break it zone”. The 4096-bit modulus will make DH computations slower (which is not a real problem for a VPN; these occur only at the start of the connection), but won’t actually improve security.
+> 
+> 出处：https://security.stackexchange.com/questions/95178/diffie-hellman-parameters-still-calculating-after-24-hours
 
 添加sudoer的话，也就只需要在`/etc/sudoers`添加如下一行：
 
 
-```
+```bash
 harris  ALL=(ALL)       ALL
 ```
 
@@ -489,55 +478,47 @@ harris  ALL=(ALL)       ALL
 
 完成了上边的安装之后，浏览器打开我的在线IDE域名，即可自动弹出证书校验提示，当然如果没有安装客户端证书的话，nginx也会直接拒绝进一步连接。
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![nginx发起客户端证书验证](./image-3.png)
-<figcaption>nginx发起客户端证书验证</figcaption></figure>
-</div>
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
-![浏览器发起系统私钥验证](./image-4.png)
-<figcaption>浏览器发起系统私钥验证</figcaption></figure>
-</div>
+![图片](./image-3.png)
+nginx发起客户端证书验证
+
+
+![图片](./image-4.png)
+浏览器发起系统私钥验证
 
 全部给予允许的情况下，即可打开：
 
-<div class="wp-block-image">
-<figure class="aligncenter size-large">
 ![图片](./image-5.png)
-</figure>
-</div>
 
-当然，如果中间任何一步拒绝，或者客户端没有安装认证用的证书，nginx会直接拒绝连接，如下图：<figure class="wp-block-image size-large">
+当然，如果中间任何一步拒绝，或者客户端没有安装认证用的证书，nginx会直接拒绝连接，如下图：
 
 ![图片](./image-6.png)
- </figure> 
+
 
 当然，有自己的CA，全程都可以报小绿锁，证书签发也不再需要众多限制，客户端认证和HTTPS全部都可以使用自己CA签发的证书，属实是方便。
 
 ## 安装Python3插件
 
-CentOS8自带了Python3.6支持，因此无需再安装解释器程序。此处就直接在Code Server中安装Python的支持扩展，需要特别注意的是，应用商店里的Python似乎和Code Server不怎么兼容，参考[https://github.com/cdr/code-server/issues/1837]的Issue，需要使用一个比较老的版本[https://github.com/microsoft/vscode-python/releases/tag/2020.5.86806]，下载vsix并且拖拽上传到服务器，在扩展中手动安装VSIX即可。
+CentOS8自带了Python3.6支持，因此无需再安装解释器程序。此处就直接在Code Server中安装Python的支持扩展，需要特别注意的是，应用商店里的Python似乎和Code Server不怎么兼容，参考`https://github.com/cdr/code-server/issues/1837`的Issue，需要使用一个比较老的版本`https://github.com/microsoft/vscode-python/releases/tag/2020.5.86806`，下载vsix并且拖拽上传到服务器，在扩展中手动安装VSIX即可。
 
-注意需要把自动更新关掉，否则等下就会发现又自动更新回去了。<figure class="wp-block-image size-large">
+注意需要把自动更新关掉，否则等下就会发现又自动更新回去了。
 
 ![图片](./image-7.png)
- </figure> 
 
-然后，代码即可正常高亮，同时按下Ctrl还可以看到函数文档：<figure class="wp-block-image size-large">
+
+然后，代码即可正常高亮，同时按下Ctrl还可以看到函数文档：
 
 ![图片](./image-8.png)
- </figure> 
+
 
 ## 写个代码
 
 最后，让我来写个测试代码，顺便跑一下
 ![图片](./1608707986-v2-cfbee0ca9806b1491671b856543dcf91_hd-e1608708029392.jpg)
-<figure class="wp-block-image size-large">
+
 
 ![图片](./image-9.png)
- </figure> <figure class="wp-block-image size-large">
+
 ![图片](./image-10.png)
-</figure> 
+
 
 体验不错。

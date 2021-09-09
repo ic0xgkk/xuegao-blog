@@ -1,18 +1,14 @@
 ---
-aliases:
-- /archives/1735
 categories:
-- 未分类
-date: -001-11-30T00:00:00+00:00
-draft: true
-title: 数据结构五大常用算法
+- 语言
+date: 2021-03-26T16:21:00+00:00
+draft: false
+title: 数据结构常用算法
 ---
 
 在前几天，有幸被字节跳动基础架构部发起面试，看起来工作内容也挺对口，一面非常无压力就过了，二面栽在了一个很简单的DP上……本来还打算借助工作时候再自顶向下学算法，现在看起来还是先花时间学吧，不然下一个机会可能又失之交臂了…
 
-
-
-~~事实证明，即便是网络研发，数据结构基础还是得要有的…~~事实证明，这样的刷题脱离实际需求的学习方法太不适合我了，一道题往往能抠一天，好花时间，本着时间最大化利用原则，还是以眼前的有价值的需求为主好了…我还是先去写毕设的DPDK的路由表查表好了，吐了吐了
+~~事实证明，即便是网络研发，数据结构基础还是得要有的…~~ 事实证明，这样的刷题脱离实际需求的学习方法太不适合我了，一道题往往能抠一天，好花时间，本着时间最大化利用原则，还是以眼前的有价值的需求为主好了…我还是先去写毕设的DPDK的路由表查表好了，吐了吐了
 
 讲个笑话，数据结构基础非常好（偏重），可以去BAT，计算机网络基础非常好（偏重），可以去做甲方。
 
@@ -32,10 +28,10 @@ title: 数据结构五大常用算法
 
 此处贴出来LeetCode 46，执行用时击败100%内存消耗击败64%，我拿这个细说回溯。
 
-题目也很简单：给定一个** 没有重复** 数字的序列，返回其所有可能的全排列。那么输入[1, 2, 3]，你就会得到他的全排列[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]
+题目也很简单：给定一个 **没有重复** 数字的序列，返回其所有可能的全排列。那么输入[1, 2, 3]，你就会得到他的全排列[1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]
 
 
-```
+```go
 func permute(nums []int) [][]int {
 
         // 定义返回的全排列集合
@@ -64,14 +60,32 @@ func permute(nums []int) [][]int {
 		}
 
                 // 挨个判断，重复则继续
-		for i:=0; i<len(nums); <="" backtrack([]int{})="" backtrack(path)="" code="" flags[nums[i]]="false" i++="" if="" nums[i])="" path="path[:len(path)-1]" ret="" return="" {="" }="" 不重复则设置该数值flag，并且追加进path中="" 回溯，重置当前flag和path最后一位=""></len(nums);>
+		for i:=0; i<len(nums); i++ {
+			if flags[nums[i]] == false {
+
+                                // 不重复则设置该数值flag，并且追加进path中
+				path = append(path, nums[i])
+				flags[nums[i]] = true
+				backtrack(path)
+
+                                // 回溯，重置当前flag和path最后一位
+				flags[nums[i]] = false
+				path = path[:len(path)-1]
+			}
+		}
+	}
+
+	backtrack([]int{})
+
+	return ret
+}
 ```
 
 
 正好刚又做了一个题，LeetCode 82，也就一个递归思想，正好也放进来好了：
 
 
-```
+```go
 /**
  * Definition for singly-linked list.
  * type ListNode struct {
@@ -100,7 +114,7 @@ func deleteDuplicates(head *ListNode) *ListNode {
             back(current.Next)
         } 
 
-        if dup[current.Val] &gt; 1 {
+        if dup[current.Val] > 1 {
             return
         } else {
             current.Next = past
@@ -120,14 +134,14 @@ func deleteDuplicates(head *ListNode) *ListNode {
 LeetCode 63
 
 
-```
+```go
 func uniquePathsWithObstacles(obstacleGrid [][]int) int {
 	rowLen := len(obstacleGrid)
-	if rowLen &lt; 1 {
+	if rowLen < 1 {
 		return 0
 	}
 	columLen := len(obstacleGrid[0])
-	if columLen &lt; 1 {
+	if columLen < 1 {
 		return 0
 	}
 	if obstacleGrid[0][0] == 1 {
@@ -135,5 +149,27 @@ func uniquePathsWithObstacles(obstacleGrid [][]int) int {
 	}
 
 	dp := make([][]int, rowLen)
-	for i:=0; i<rowlen; &&="" +="" <="" code="" columlen)="" dp[i-1][j]="" dp[i]="make([]int," dp[i][j]="dp[i][j-1]" dp[rowlen-1][columlen-1]="" else="" for="" i="0" i!="0" i++="" if="" j="0" j!="0" j++="" j:="0;" j<columlen;="" obstaclegrid[i][j]="0" return="" {="" }=""></rowlen;>
+	for i:=0; i<rowLen; i++ {
+		dp[i] = make([]int, columLen)
+		for j:=0; j<columLen; j++ {
+			if i==0 && j==0 {
+				dp[i][j] = 1
+			} else if i==0 && j!=0 {
+				if obstacleGrid[i][j] == 0 {
+					dp[i][j] = dp[i][j-1]
+				}
+			} else if i!=0 && j==0 {
+				if obstacleGrid[i][j] == 0 {
+					dp[i][j] = dp[i-1][j]
+				}
+			} else {
+				if obstacleGrid[i][j] == 0 {
+					dp[i][j] = dp[i][j-1] + dp[i-1][j]
+				}
+			}
+		}
+	}
+
+	return dp[rowLen-1][columLen-1]
+}
 ```

@@ -2,7 +2,7 @@
 aliases:
 - /archives/1748
 categories:
-- 未分类
+- 生活
 date: 2021-05-09 03:46:31+00:00
 draft: false
 title: 喜欢or不喜欢、对口or不对口——深思应届毕业生的何去何从

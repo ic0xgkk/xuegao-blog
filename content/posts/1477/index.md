@@ -10,11 +10,7 @@ title: XUEGAONET v1.x混合云网络架构详解
 
 雪糕网络（xuegao_net）最初来源于瞎搞，没想到越搞越大，在逐步整合了所到之处所有的网络之后，发现管理已经力不从心，由此决定结合在鹅厂学到的东西，慢慢对网络结构进行整改，向着独立、自治和软件定义的目标重构网络。
 
-
-
 新网络以BGP为基础，借助GoBGP来实现NFV在区域内部进行引流，同时对外发布路由，借此来实现云上+云下一体化。
-
-
 
 ## 主要工作
 
@@ -38,16 +34,16 @@ title: XUEGAONET v1.x混合云网络架构详解
   * 云上VxLAN打通，配合网关和云上服务整合全网资源
   * 发布路由过滤，只允许非点对点路由发布出去，全网地址规划统一
 
-下阶段的话，打算部署EVPN分布式网关了，只不过由于RouterOS迟迟还没有支持BGP EVPN，因此全线换VyOS或者Linux+frrouting可能还需要一段时间。还是分布式的大二层舒服啊…………鉴于TAP接入容易屏蔽路由，虽然防止了数据泄露，但是也给一些场景下使用带来了不便，看看后边要不要做个客户端解决一下
+下阶段的话，打算部署EVPN分布式网关了，只不过由于RouterOS迟迟还没有支持BGP EVPN，因此全线换VyOS或者Linux+frrouting可能还需要一段时间。还是分布式的大二层舒服啊...鉴于TAP接入容易屏蔽路由，虽然防止了数据泄露，但是也给一些场景下使用带来了不便，看看后边要不要做个客户端解决一下
 
 ## PaaS向CaaS过渡
 
-CentOS 8安装Docker会有一些不兼容的问题，安装参考这篇文章即可解决：<a href="https://linuxconfig.org/how-to-install-docker-in-rhel-8" rel="noreferrer noopener" target="_blank">https://linuxconfig.org/how-to-install-docker-in-rhel-8</a>
+CentOS 8安装Docker会有一些不兼容的问题，安装参考这篇文章即可解决：https://linuxconfig.org/how-to-install-docker-in-rhel-8
 
 当然是Docker~基本操作完成后，创建`/etc/docker/daemon.json`这么个文件，内容如下。主要目的是不要让docker开启默认的bridge和iptables规则，当然如果你要拿这个机器做docker build的话就不要做这步操作了不然build过程中会无法联网
 
 
-```
+```json
 {
     "iptables": false,
     "bridge": "none"
@@ -58,7 +54,7 @@ CentOS 8安装Docker会有一些不兼容的问题，安装参考这篇文章即
 其次修改/lib/systemd/system/docker.service，修改数据目录，这个具体看实际应用环境，由于我这里数据存储和系统是分开的，因此要手动改下数据目录。改动后如下（其实也没改多少内容，只是在`ExecStart=/usr/bin/dockerd -H fd://`多加了个`-g /data/docker`）
 
 
-```
+```ini
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
@@ -106,7 +102,6 @@ KillMode=process
 
 [Install]
 WantedBy=multi-user.target
-
 ```
 
 
@@ -118,18 +113,14 @@ WantedBy=multi-user.target
 
 参考资料：
 
-  * <https: build-vyos.html="" contributing="" docs.vyos.io="" en="" latest="">
+* https://docs.vyos.io/en/latest/contributing/build-vyos.html
 
 在开始前，先提醒下需要留意下VyOS的许可证问题，官方对许可证是这么解释的（如下），意味着，本如果你想得到LTS镜像，那么抱歉要订阅（或者在开源社区有贡献），否则你就只能老老实实用滚动发布版本（相当于nightly版本，可能不稳定）。但是，LTS源码都公开了，如果你不想订阅那么就只能自己编译，官方甚至还提供了docker image封装好了编译的环境，自己编译iso几乎也是0成本了。这个操作我觉得很赞
 
-<blockquote class="wp-block-quote">
-<p>
-    Starting with VyOS 1.2 the release model of VyOS has changed. VyOS is now <strong>free as in speech, but not as in beer</strong>. This means that while VyOS is still an open source project, the release ISOs are no longer free and can only be obtained via subscription, or by contributing to the community.
-  </p>
-<p>
-    The source code remains public and an ISO can be built using the process outlined here.
-  </p>
-</blockquote>
+> Starting with VyOS 1.2 the release model of VyOS has changed. VyOS is now <strong>free as in speech, but not as in beer</strong>. This means that while VyOS is still an open source project, the release ISOs are no longer free and can only be obtained via subscription, or by contributing to the community.
+> 
+> The source code remains public and an ISO can be built using the process outlined here.
+
 
 之所以选择VyOS，是因为VyOS与时俱进，同时在1.2版本之后加入了frrouting，可以说是非常完美了。不论是用在个人环境的云上还是用在家庭等小规模环境，几乎都要比RouterOS完美，而且frr原生支持了BGP EVPN（事实证明VyOS的frr如果要使用EVPN，需要手动单独配置），Linux自带的iptables融入在其中，从功能层面上几乎已经完全秒杀RouterOS了。在VyOS支持WireGuard和OpenVPN UDP的今天，RouterOS刚刚在alpha版本支持了OpenVPN UDP，~~所以我选择开始逐渐向VyOS过渡~~（事实证明VyOS还是不成熟…….）。
 
@@ -142,7 +133,7 @@ WantedBy=multi-user.target
 我装了两个测试机做MultiHop BGP，参考CLI如下，由于是测试，因此公钥私钥我也不脱敏了。两个机器，一个hostname是T1，一个是T2，具体配置如下
 
 
-```
+```bash
 vyos@T1:~$ show configuration commands 
 set firewall all-ping 'enable'
 set firewall broadcast-ping 'disable'
@@ -186,7 +177,7 @@ set system syslog global facility protocols level 'debug'
 ```
 
 
-```
+```bash
 vyos@T2:~$ show configuration commands 
 set firewall
 set interfaces bridge br0 address '8.8.8.8/32'
@@ -229,7 +220,7 @@ WireGuard使用的是被动连接模式，不是点对点模式，因为实际�
 rc.local如下，主要是用于开机时添加loopback地址。尝试使用network-scripts但是死活加不上去，只能曲线救国了
 
 
-```
+```bash
 #!/bin/bash
 # THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
 #
@@ -251,7 +242,7 @@ touch /var/lock/subsys/local
 下边的这个是sysctl.conf，主要打开了转发和bbr
 
 
-```
+```bash
 # sysctl settings are defined through files in
 # /usr/lib/sysctl.d/, /run/sysctl.d/, and /etc/sysctl.d/.
 #
@@ -299,12 +290,9 @@ VyOS由于crux版本（目前的LTS）暂时还没有支持VRF，预估还要等
 
 在切换方案的时候，无意中看到了frrouting官网这么一段话
 
-<blockquote class="wp-block-quote">
-<p>
-    Important note as of June 2018, Kernel versions 4.14-4.18 have a known bug where VRF-specific TCP sockets are not properly handled. When running these kernel versions, if unable to establish any VRF BGP adjacencies, either downgrade to 4.13 or set ‘net.ipv4.tcp_l3mdev_accept=1’. The fix for this issue is planned to be included in future kernel versions. So upgrading your kernel may also address this issue.
-  </p>
-<cite><a href="http://docs.frrouting.org/en/latest/installation.html">http://docs.frrouting.org/en/latest/installation.html</a></cite>
-</blockquote>
+> Important note as of June 2018, Kernel versions 4.14-4.18 have a known bug where VRF-specific TCP sockets are not properly handled. When running these kernel versions, if unable to establish any VRF BGP adjacencies, either downgrade to 4.13 or set ‘net.ipv4.tcp_l3mdev_accept=1’. The fix for this issue is planned to be included in future kernel versions. So upgrading your kernel may also address this issue.
+> 
+> http://docs.frrouting.org/en/latest/installation.html
 
 上边这段话说Linux有些版本的内核对于VRF的支持有bug，可能会导致VRF无法获取TCP socket，进而导致BGP连接被VRF接管时TCP连接无法进入established状态。暂且看来RouterOS可能就是这样了，不过至于这个socket是如何在VRF间共享的（非进程绑定在命名空间），这个晚点研究一下
 
@@ -317,8 +305,7 @@ VyOS由于crux版本（目前的LTS）暂时还没有支持VRF，预估还要等
 （警告！~~下边使用的7.2版本中BFD在VRF中有bug，建议跟进主线~~主线的也无法使用）编译安装一条龙（仅限CentOS7，其他系统自行看官方文档）：
 
 
-```
-
+```bash
 wget https://ci1.netdef.org/artifact/LIBYANG-YANGRELEASE/shared/build-10/CentOS-7-x86_64-Packages/libyang-0.16.111-0.x86_64.rpm
 wget https://ci1.netdef.org/artifact/LIBYANG-YANGRELEASE/shared/build-10/CentOS-7-x86_64-Packages/libyang-devel-0.16.111-0.x86_64.rpm
 yum install ./liby*
@@ -364,19 +351,16 @@ systemctl enable frr
 
 紧接着要配置VRF，查阅官方文档，有这么句话
 
-<blockquote class="wp-block-quote">
-<p>
-    This command is available on configuration mode. By default, above command permits accessing the VRF configuration mode. This mode is available for both VRFs. It is to be noted that <strong><em>Zebra</em> does not create Linux VRF</strong>. The network administrator can however decide to provision this command in configuration file to provide more clarity about the intended configuration.
-  </p>
-<cite><strong>vrf VRF</strong></cite>
-</blockquote>
+> This command is available on configuration mode. By default, above command permits accessing the VRF configuration mode. This mode is available for both VRFs. It is to be noted that <strong><em>Zebra</em> does not create Linux VRF</strong>. The network administrator can however decide to provision this command in configuration file to provide more clarity about the intended configuration.
+> 
+> <strong>vrf VRF</strong>
 
 上边这段话，加粗的那个从句是重点，漏看了这句导致我搞了好久。Zebra不会自动创建VRF的情况下，就意味着你要手动创建VRF并且把相关接口绑定进VRF，最好接口地址连带一起配置了。
 
 因此，你需要手动搓一个一次性服务，用于在系统启动后配置VRF。路径在`/data/interface.sh`，需要配合服务启动，具体的service在下边，此处先贴脚本内容：
 
 
-```
+```bash
 #!/bin/bash
 
 ip link add dev CORE type vrf table 200
@@ -391,14 +375,14 @@ ifconfig CORE up
 由于要确保BGP会话能够绑定在VRF中，因此要打开TCP Socket捕获，同时Kernel的IP Forward也要打开，UDP也需要进行Socket捕获是因为BFD要用，配置`sysctl.conf`即可，配置如下（如果用云服务器之类的，可能会有预置参数，改一下即可）：
 
 
-```
+```bash
 net.ipv4.tcp_l3mdev_accept=1
 net.ipv4.udp_l3mdev_accept=1
 net.ipv4.ip_forward=1
 ```
 
 
-生效后可以使用`ip route show vrf CORE`查看CORE这个VRF中的路由。并且测试过Zebra能够正常安装下路由，大概效果就是这样<figure class="wp-block-image size-large">
+生效后可以使用`ip route show vrf CORE`查看CORE这个VRF中的路由。并且测试过Zebra能够正常安装下路由，大概效果就是这样
 
 ![图片](./image.png)
  </figure> 
@@ -410,7 +394,7 @@ net.ipv4.ip_forward=1
 紧接着手动安装wireguard-tools，直接源码安装就好
 
 
-```
+```bash
 wget https://github.com/WireGuard/wireguard-tools/archive/v1.0.20200513.tar.gz
 tar xvf v1.0.20200513.tar.gz
 cd wireguard-tools-1.0.20200513/src
@@ -424,12 +408,12 @@ make install
 由于直连IP仅用于隧道打通和SSH，BGP等服务还是在内部其他隧道，因此iptables记得修改规则，所有入口过滤仅限在公网入接口，内部隧道接口一般就不加了，真要加也只是加一个TCP MSS Clamp而已。
 
 
-```
-wg genkey &gt; private.key
+```bash
+wg genkey > private.key
 chmod 077 private.key
-wg pubkey &lt; private.key &gt; public.key
+wg pubkey < private.key > public.key
 
-cat &gt;&gt; /etc/wireguard/wg0.conf &lt;&lt; EOF
+cat >> /etc/wireguard/wg0.conf << EOF
 [Interface]
 PrivateKey = [私钥]
 ListenPort = [端口号]
@@ -440,7 +424,6 @@ Table = off  # 不要让wg-quick自作主张添加规则
 PublicKey = [公钥]
 AllowedIPs = 0.0.0.0/0
 EOF
-
 ```
 
 
@@ -466,7 +449,7 @@ systemctl enable wg-quick@wg0
   * network.service：网络服务，这个就不多说了
   * wg-quick@wg0.service：WireGuard服务
 
-启动顺序为：network.service -&gt; wg-quick@wg0.service -&gt; interface.service -&gt; frr.service。wg-quick@wg0.service要确保网络已经全部启动，因此要在network.service后；interface.service会添加物理接口和wg接口道VRF，因此要在wg-quick@wg0.service之后启动，最后再给frr配置地址。所以这样一来，只需要保障这样一条链的After即可。需要注意的是，我不建议使用Wants，因为Wants拉起服务仍然是同时拉起，还是要单独去设置启动顺序，建议还是老老实实After为好。
+启动顺序为：network.service -> wg-quick@wg0.service -> interface.service -> frr.service。wg-quick@wg0.service要确保网络已经全部启动，因此要在network.service后；interface.service会添加物理接口和wg接口道VRF，因此要在wg-quick@wg0.service之后启动，最后再给frr配置地址。所以这样一来，只需要保障这样一条链的After即可。需要注意的是，我不建议使用Wants，因为Wants拉起服务仍然是同时拉起，还是要单独去设置启动顺序，建议还是老老实实After为好。
 
 因此，最后只需要这几步：
 
@@ -474,15 +457,15 @@ systemctl enable wg-quick@wg0
   * 添加interface.service，注意脚本给可执行权限。After=wg-quick@wg0.service
   * 修改frr.service，After添加interface.service
   * 禁用NetworkManager.service，启用interface.service等
-  * 如果依赖存在循环，需要手工再去筛查解决<figure class="wp-block-image size-large">
+  * 如果依赖存在循环，需要手工再去筛查解决
 
 ![图片](./image-1.png)
- </figure> 
-
-可以看到，最终应该达到的效果，就是上边这样。（上边这个图是使用`systemd-analyze plot &gt; xgn-local-004.svg`导出）。interface.service的文件内容如下：
 
 
-```
+可以看到，最终应该达到的效果，就是上边这样。（上边这个图是使用`systemd-analyze plot > xgn-local-004.svg`导出）。interface.service的文件内容如下：
+
+
+```ini
 [Unit]
 Description=XGN Interface
 After=wg-quick@wg0.service
@@ -506,7 +489,7 @@ WantedBy=multi-user.target
 基本上也没什么东西，只是各处的interface.sh脚本会有所差异而已（注意该脚本是归属于服务的，被服务一次性执行，同时需要确保在network.service之后执行），贴出来部分脚本吧
 
 
-```
+```bash
 ip link add vxlan1000 type vxlan id 1000 local x.x.x.x remote x.x.x.x dstport 4789 
 ifconfig vxlan1000 hw ether aa:bb:cc:dd:ee:ff mtu 1500 up
 ip link set dev vxlan1000 master CORE
@@ -518,7 +501,7 @@ ip link set dev vxlan1000 master CORE
 腾讯云的服务器的MAC和IP地址是唯一绑定的，因此不能乱改MAC，否则会无法使用………由于我把上联的口bridge到容器里去了，因此容器里要在每次启动时一次性服务要把接口mac改掉，同时宿主的mac也要改掉（不然就会在宿主也产生水平分割），大概如下
 
 
-```
+```bash
 ifconfig eth1 hw ether xx:xx:xx:xx:xx:xx
 
 ip route del default
@@ -535,7 +518,7 @@ ip route add default via x.x.x.x
 创建网络和容器连接进网络
 
 
-```
+```bash
 docker network create -d macvlan --subnet=x.x.x.x/x --gateway x.x.x.x -o parent=vxlan100 network-name
 
 docker network connect --ip x.x.x.x network-name container-name
@@ -545,11 +528,11 @@ docker network connect --ip x.x.x.x network-name container-name
 需要特别注意的是，docker新建容器时，一定要指定network，不然默认会给扔到默认的bridge去。
 
 
-```
+```bash
 docker run -it -d -e container=docker --dns="x.x.x.x" --privileged --memory="512m" --memory-swap="768m" --tmpfs /run --tmpfs /tmp -v /sys/fs/cgroup:/sys/fs/cgroup:ro --network network-name --ip x.x.x.x  --stop-signal SIGRTMIN+3  --restart always --sysctl net.ipv4.ip_forward=1 --name container-name image-name
 ```
 
 
 看情况决定要不要给特权容器吧，由于我运行frr用的（IGP的网关要拉BGP知道回程路由），因此还要再给一个sysctl的参数，这些在docker的官方文档上都有非常非常详细的说明（我这么多年看过的最美观和详细的文档，可能就是docker的了）。内存配置是累加的，详见文档~
 
-上边这个配置是容器中运行操作系统的命令，具体就不挨个讲了，感兴趣可以去自己查。如果不按照这个配置，尤其是非特权容器的情况下，你的容器极大概率无法启动systemd……..</https:>
+上边这个配置是容器中运行操作系统的命令，具体就不挨个讲了，感兴趣可以去自己查。如果不按照这个配置，尤其是非特权容器的情况下，你的容器极大概率无法启动systemd……..

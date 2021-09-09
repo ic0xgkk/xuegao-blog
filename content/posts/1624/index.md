@@ -2,17 +2,13 @@
 aliases:
 - /archives/1624
 categories:
-- WordPress
+- 建站
 date: 2020-12-17 10:11:31+00:00
 draft: false
 title: WordPress全容器部署方案实施
 ---
 
 本站在2020年12月中旬进行了一次全站迁移，在本次迁移过程中有一个最主要的目的就是——全站容器化。借助容器来摆脱PHP各种CVE爆出后升级手搓编译PHP和依赖的麻烦，事实证明，全容器之后，真的不要太香。
-
-
-
-
 
 ## 为什么需要全站容器化
 
@@ -24,17 +20,15 @@ title: WordPress全容器部署方案实施
 
 ## 系统架构图
 
-整体架构大致如下：<figure class="wp-block-image size-large">
+整体架构大致如下：
 
 ![图片](./image-1.png)
- </figure> 
 
 其中，紫色框即代表该服务器，蓝色框是独立的网络命名空间，粉色框即虚拟网络设备（这里是bridge）。在这个架构图里，宿主网络命名空间只安装了nginx和iptables，iptables主要用于防护，借助状态防火墙拦截掉无需开启的端口；nginx则是充当网关，所有服务均需要经过nginx网关才能进入后侧的容器中。在这里，nginx配置反向代理和HTTP请求头验证，也可能会加入HTTPS和HSTS，所有的请求在nginx之前都将会是加密的，在过nginx之后到后边的容器时，将会成为明文，因此在园区里这样部署，刚好可以在中间加一个应用防火墙。在容器里这样部署，在WordPress双容器的情况下，可以实现完全无感知的容器升级。
 
-在这样一个系统架构里，我们一同来看看他的流路径：<figure class="wp-block-image size-large">
+在这样一个系统架构里，我们一同来看看他的流路径：
 
 ![图片](./image-2.png)
- </figure> 
 
 在这样一个架构中，假设用户需要访问我的博客，他会先发出请求（如图中路径1）到我的服务器中，在这个过程中会经过iptables进行过滤，符合所设置规则的才会放行进来（当然中间实际上还是有CDN和其他一些东西的，此处先不考虑了），在路径1中数据包全程HTTPS加密。紧接着，由于nginx设置了到blog.xuegaogg.com的域名反代到10.1.1.4:80，因此nginx会把请求再转发到WordPress（主），这条路径中是没有加密的，请求将会明文传输，如图路径2。紧接着，WordPress（主）收到了访问请求，然后需要查数据库，因此如路径3，MySQL请求经过宿主的bridge进入到MySQL 5.7这个容器中。然后，MySQL 5.7要讲查询结果返回给WordPress（主），因此响应数据经过路径4回去到WordPress（主），在该容器中的PHP处理完成后，再通过路径5回到宿主的Nginx中。最终，再由nginx封装HTTPS等再重新发出（如图中路径6）回到用户侧。
 
@@ -62,7 +56,7 @@ title: WordPress全容器部署方案实施
 
 ### 新增Docker Bridge
 
-```
+```bash
 docker network create \
   --driver=bridge \
   --subnet=10.1.1.0/24 \
@@ -83,7 +77,7 @@ docker network create \
 注意文件权限。
 
 
-```
+```bash
 docker run \
     --restart=always --name mysql -it \
     -v /data/mysql-data:/var/lib/mysql \
@@ -97,7 +91,7 @@ docker run \
 
 ### 启动phpmyadmin
 
-```
+```bash
 docker run \
     --restart=always --name phpmyadmin -it -d \
     -e PMA_HOST=10.1.1.2 \
@@ -111,7 +105,7 @@ docker run \
 WordPress同样也是挂载出来的，数据目录和配置目录全部外挂。因此，也需要提前准备好apache2的配置文件，否则会造成无法启动。数据目录需要注意权限，以避免WP出现奇奇怪怪的问题。
 
 
-```
+```bash
 docker run \
     -it -d --restart=always --name wordpress --restart=always \
     --ip 10.1.1.4 \
@@ -124,7 +118,7 @@ docker run \
 
 ### 参考iptables规则
 
-```
+```bash
 *filter
 :INPUT ACCEPT [0:0]
 :FORWARD ACCEPT [50403:17557739]
@@ -153,10 +147,10 @@ COMMIT
 
 ### 参考sysctl.conf
 
-**注意：**绝大多数的配置均需要结合实际的环境（好比机器配置）进行额外修改。直接复制粘贴可能会造成一些机器运行时死机。
+**注意：** 绝大多数的配置均需要结合实际的环境（好比机器配置）进行额外修改。直接复制粘贴可能会造成一些机器运行时死机。
 
 
-```
+```ini
 net.ipv4.ip_forward = 1
 
 net.ipv4.conf.default.rp_filter = 1
@@ -189,10 +183,10 @@ net.ipv4.tcp_congestion_control=bbr
 
 ### 参考nginx.conf
 
-**注意：**在docker环境中log的位置实际上都是链接了stdout或者stderr，日志输出位置建议不要乱改，免得造成容器内日志积压。
+**注意：** 在docker环境中log的位置实际上都是链接了stdout或者stderr，日志输出位置建议不要乱改，免得造成容器内日志积压。
 
 
-```
+```nginx
 user  nginx;
 worker_processes  2;
 
@@ -257,13 +251,12 @@ http {
     access_log off;
 
 }
-
 ```
 
 
 ### 参考nginx单个server配置
 
-```
+```nginx
 server {
     listen       端口号 ssl http2;
     server_name  IP地址或者域名;
@@ -287,7 +280,6 @@ server {
         include proxy.conf; # 引入的这个文件自行去nginx官网文档找吧，需要改动一些配置
     }
 }
-
 ```
 
 

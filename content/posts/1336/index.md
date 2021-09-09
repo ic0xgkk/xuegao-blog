@@ -11,12 +11,9 @@ title: Open vSwitch和DPDK在CentOS8的部署
 最近在学DPDK，借助DPDK的优化，转发平面的包转发性能提升了将近10倍，这一指标实在是太香了。刚好同时担任助教在讲相关方面的课程，趁此机会顺便封装一个最小环境，顺便尝试部署一下OVS，一边为课程提供一个实验环境一边为后边落地提供一个保障。
 
 
-
-
-
 ## 前言
 
-在本文开始写时，部署工作已经进行了一半了，前边的可能就没办法详细写了，等后边再在生产环境部署时有问题再补充。
+在本文开始写时，部署工作已经进行了一半了，前边的可能就没办法详细写了。
 
 本文所部署的环境只是一个最小实验环境，包含如下程序：
 
@@ -36,12 +33,12 @@ DPDK的版本和OVS的一定要对应，这个可以看文档，亲测版本号�
 
 前置任务。建议在开始部署之前先阅读这些内容
 
-  * <a aria-label="（在新窗口打开）" href="http://docs.openvswitch.org/en/latest/intro/install/general/" rel="noreferrer noopener" target="_blank">http://docs.openvswitch.org/en/latest/intro/install/general/</a> 【官方的安装指南】
-  * <a aria-label="（在新窗口打开）" href="http://docs.openvswitch.org/en/latest/faq/openflow/" rel="noreferrer noopener" target="_blank">http://docs.openvswitch.org/en/latest/faq/openflow/</a> 【官方的OpenFlow使用指南】
-  * <a aria-label="（在新窗口打开）" href="http://docs.openvswitch.org/en/latest/intro/install/dpdk/" rel="noreferrer noopener" target="_blank">http://docs.openvswitch.org/en/latest/intro/install/dpdk/</a> 【官方的DPDK集成指南】
-  * <a aria-label="（在新窗口打开）" href="https://core.dpdk.org/download/" rel="noreferrer noopener" target="_blank">https://core.dpdk.org/download/</a> 【DPDK官方下载页】
-  * <a aria-label="（在新窗口打开）" href="https://medium.com/@lhamthomas45/dpdk-19-11-is-out-why-you-should-update-and-how-to-do-so-7395810f71e" rel="noreferrer noopener" target="_blank">https://medium.com/@lhamthomas45/dpdk-19-11-is-out-why-you-should-update-and-how-to-do-so-7395810f71e</a> 【DPDK 19.11 编译时出错误的解决办法】
-  * <a aria-label="（在新窗口打开）" href="https://docs.pica8.com/display/picos2102cg/Configure+OVS+for+RYU+OpenFlow+Controller" rel="noreferrer noopener" target="_blank">https://docs.pica8.com/display/picos2102cg/Configure+OVS+for+RYU+OpenFlow+Controller</a> 【OVS配置OpenFlow控制器】
+* http://docs.openvswitch.org/en/latest/intro/install/general/ 【官方的安装指南】
+* http://docs.openvswitch.org/en/latest/faq/openflow/ 【官方的OpenFlow使用指南】
+* http://docs.openvswitch.org/en/latest/intro/install/dpdk/ 【官方的DPDK集成指南】
+* https://core.dpdk.org/download/ 【DPDK官方下载页】
+* https://medium.com/@lhamthomas45/dpdk-19-11-is-out-why-you-should-update-and-how-to-do-so-7395810f71e 【DPDK 19.11 编译时出错误的解决办法】
+* https://docs.pica8.com/display/picos2102cg/Configure+OVS+for+RYU+OpenFlow+Controller 【OVS配置OpenFlow控制器】
 
 ## 部署思路
 
@@ -57,7 +54,7 @@ DPDK的版本和OVS的一定要对应，这个可以看文档，亲测版本号�
 
 ### 环境准备
 
-```
+```bash
 dnf update
 cd /etc/yum.repos.d/
 mkdir backup
@@ -72,7 +69,7 @@ sed -i 's|^#baseurl=https://download.fedoraproject.org/pub|baseurl=https://mirro
 sed -i 's|^metalink|#metalink|' /etc/yum.repos.d/epel*
 dnf makecache
 dnf install -y vim wget net-tools iproute lrzsz nano iftop bind-utils traceroute git zsh openssh-server screen NetworkManager-tui bash-completion procps passwd cronie chkconfig iputils util-linux-user tree sysstat iotop tmux
-cat &gt; /etc/selinux/config &lt;&lt; EOF
+cat > /etc/selinux/config << EOF
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
 #     enforcing - SELinux security policy is enforced.
@@ -90,7 +87,7 @@ dnf remove firewalld --noautoremove
 iptables -t filter -F
 iptables -t filter -X
 iptables -t filter -A INPUT -j ACCEPT 
-iptables-save &gt; /etc/sysconfig/iptables
+iptables-save > /etc/sysconfig/iptables
 systemctl enable iptables.service 
 systemctl start iptables.service 
 ```
@@ -103,7 +100,7 @@ systemctl start iptables.service
 我使用的OVS是2.12.0版本，按照文档所说，只能使用DPDK 19.11版本。
 
 
-```
+```bash
 cd /usr/src/
 wget https://fast.dpdk.org/rel/dpdk-19.11.tar.xz
 tar xvf dpdk-19.11.tar.xz 
@@ -120,7 +117,7 @@ make install T=$DPDK_TARGET DESTDIR=install -j2
 我手动指定了OVS的安装位置，便于管理。
 
 
-```
+```bash
 wget https://www.openvswitch.org/releases/openvswitch-2.12.0.tar.gz
 tar xvf openvswitch-2.12.0.tar.gz 
 cd openvswitch-2.12.0/
@@ -148,14 +145,14 @@ make install
 这就简单东西了，就不细说了，直接放个`/etc/profile`自己看吧，这行在尾部
 
 
-```
+```bash
 export PATH="/usr/local/ovs/sbin:/usr/local/ovs/bin:/usr/local/ovs/share/openvswitch/scripts:$PATH"
 ```
 
 
 ### 安装docker
 
-```
+```bash
 dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
 dnf install docker-ce --nobest -y
 ```
@@ -164,7 +161,7 @@ dnf install docker-ce --nobest -y
 由于docker默认会开一个bridge和一堆iptables规则出来，所以要把这些没卵用的东西关掉。在`/etc/docker`中新建一个daemon.json文件，然后把如下内容放进去就好。如果没有这个目录手动建一个就行
 
 
-```
+```json
 {
     "iptables": false,
     "bridge": "none"
@@ -186,7 +183,7 @@ service太多了懒得改了，所以我直接创建符号链接好了，把`/us
 
 #### openvswitch.service
 
-```
+```ini
 [Unit]
 Description=Open vSwitch
 Before=network.target network.service
@@ -204,7 +201,6 @@ RemainAfterExit=yes
 
 [Install]
 WantedBy=multi-user.target
-
 ```
 
 
@@ -213,7 +209,7 @@ WantedBy=multi-user.target
 注意改PID文件的位置，否则可能会start后卡死（检测不到PID文件导致）
 
 
-```
+```ini
 [Unit]
 Description=Open vSwitch Database Unit
 After=syslog.target network-pre.target
@@ -227,7 +223,6 @@ Restart=on-failure
 ExecStart=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd --no-monitor --system-id=random start
 ExecStop=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd stop
 ExecReload=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd --no-monitor restart
-
 ```
 
 
@@ -238,7 +233,7 @@ ExecReload=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd --no-monitor
 有编译DPDK的下边的DPDK预加载部分要留着，没有编译DPDK的可以删除
 
 
-```
+```ini
 [Unit]
 Description=Open vSwitch Forwarding Unit
 After=ovsdb-server.service network-pre.target systemd-udev-settle.service
@@ -273,5 +268,5 @@ TimeoutSec=300
 
 也算是参考资料
 
-  * <https: articles="" en-us="" open-vswitch-with-dpdk-overview="" software.intel.com=""> 【强烈推荐看一看】
-  * <https: developer.ibm.com="" recipes="" tutorials="" using-ovs-bridge-for-docker-networking=""></https:> 【如何让docker使用ovs桥】</https:>
+* https://software.intel.com/en-us/articles/open-vswitch-with-dpdk-overview 【强烈推荐看一看】
+* https://developer.ibm.com/recipes/tutorials/using-ovs-bridge-for-docker-networking/ 【如何让docker使用ovs桥】

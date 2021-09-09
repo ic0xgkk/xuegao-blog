@@ -1,7 +1,7 @@
 ---
 title: "kube-proxy中iptables下负载均衡如何保证会话一致性?"
 date: 2021-08-31T21:10:21+08:00
-draft: false
+draft: true
 categories:
   - Kubernetes
 ---
