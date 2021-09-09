@@ -82,7 +82,7 @@ markup:
   goldmark:
     renderer:
       # 允许原生html代码直接被渲染
-      unsafe: true
+      unsafe: false
   fuseOpts:
     isCaseSensitive: false
     shouldSort: true
