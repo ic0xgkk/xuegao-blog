@@ -22,3 +22,4 @@ enableContentHeader: false
 
 ### [清酒踏月 – 成长的过程总是荆棘满路！](https://blog.lkxin.cn/)
 
+### [AUTUMNLI MAGIC](https://wautumnli.github.io/)
