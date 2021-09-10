@@ -14,7 +14,7 @@ categories:
 
 众所周知，博主我长期使用Go语言从事基础设施开发，在这期间免不了经常会使用一些系统调用，那么在Windows上开发Linux程序时，每当调试就会非常头大。当然，后来我遇到了VSCode，Remote SSH这个插件真是让我立马卸载了JetBrains全家桶，**近乎**原生的远程开发和调试体验，实在不要太舒服。
 
-但是！随着一段时间的使用，发现VSCode对Golang的自动补全能力实在是令人无法直视，尤其在面对API不熟的情况下，缺少GOPATH全量索引的VSCode顿时就显得暗淡了，博主我默默换回了GoLand&#8230;&#8230;甚至还发了一条朋友圈
+但是！随着一段时间的使用，发现VSCode对Golang的自动补全能力实在是令人无法直视，尤其在面对API不熟的情况下，缺少GOPATH全量索引的VSCode顿时就显得暗淡了，博主我默默换回了GoLand...甚至还发了一条朋友圈
 
 ![图片](./1627109355-image.png)
 
@@ -43,7 +43,7 @@ categories:
 
 因此，如果你的内网有服务器并且互通延迟低于15ms，那恭喜你，Projector在内网的体验还是非常棒的。如果高于15ms，体验应该也没有太大差别，即便是46ms的延迟，也还是能用的（手动狗头。当然，延迟越低，体验越好啦~
 
-目前我只观测了延迟，至于带宽容量上需要保障多少，就不知道了，还需要大家自行去探索~<figure class="wp-block-image size-large">
+目前我只观测了延迟，至于带宽容量上需要保障多少，就不知道了，还需要大家自行去探索~
 
 ![图片](./1627112009-image.png)
 
@@ -62,6 +62,8 @@ categories:
 
 首先，安装相关依赖。此处我直接使用了root用户安装，是否使用root还需结合自身情景考量，如果非root运行还请再查看文档~
 
+下边的适合使用在CentOS 7系列的系统上，更高版本以及其他发行版的均未测试。
+
 ```bash
 yum install python3 python3-pip pyOpenSSL python-cryptography
 python3 -m pip install -U pip
@@ -70,9 +72,17 @@ pip3 install projector-installer
 source ~/.bash_profile
 ```
 
+当然，如果你使用非root安装，那么在安装完Python及相关依赖之后，就需要换下边的方式来安装projector了
+
+```bash
+pip3 install projector-installer --user
+```
+
 ### Projector配置
 
-初次使用，需要先install一下安装所需的IDE，大致流程就像下边这样
+初次使用，需要先install一下安装所需的IDE，大致流程就像下边这样。
+
+需要特别留意的是，下边这里我使用的非测试通道，如果追求稳定使用，建议使用已测试的版本。
 
 ```bash
 [root@T-K8S-M ~]# projector install 
@@ -91,8 +101,8 @@ Installing IDE in quick mode; for full customization you can rerun this command 
           2.  Rider
           3.  DataSpell
           13. MPS
-Choose IDE type or 0 to exit: &#91;0-13]: 6
-Do you want to select from Projector-tested IDE only? &#91;y/N]
+Choose IDE type or 0 to exit: [0-13]: 6
+Do you want to select from Projector-tested IDE only? [y/N]
            1. GoLand 2021.1.3
            2. GoLand 2021.1.2
            3. GoLand 2021.1.1
@@ -118,16 +128,16 @@ Do you want to select from Projector-tested IDE only? &#91;y/N]
           23. GoLand 2019.3.2
           24. GoLand 2019.3.1
           25. GoLand 2019.3
-Choose IDE number to install or 0 to exit: &#91;0-25]: 1
+Choose IDE number to install or 0 to exit: [0-25]: 1
 Installing GoLand 2021.1.3
 Downloading goland-2021.1.3.tar.gz
-&#91;##################################################]  100%          
+[##################################################]  100%          
 Unpacking goland-2021.1.3.tar.gz
-&#91;##################################################]  100%          
+[##################################################]  100%          
 Configuration name: GoLand
 Checking for updates ... done.
 To access IDE, open in browser 
-        http:&#47;&#47;localhost:9999/
+        http://localhost:9999/
 
 To see Projector logs in realtime run
         tail -f "/root/.projector/configs/GoLand/projector.log"
@@ -159,7 +169,7 @@ Choose update channel or 0 to keep current(not_tested): [0-2]: 0
 done.
 ```
 
-最后，当然是安装自己CA签发下来的证书辣~
+最后，当然是安装自己CA签发下来的证书辣~如果你不配置，那么默认**可能**是使用其自签发的证书，浏览器可能会报不信任，当然，你也可以直接使用HTTP（前提是网络环境安全）
 
 ```bash
 [root@T-K8S-M apps]# projector install-certificate --certificate /root/server.pem --key /root/server-key.pem 
@@ -197,6 +207,29 @@ EOF
 
 systemctl daemon-reload
 systemctl enable --now goland.service
+```
+
+当然，如果你期望使用用户模式的systemd，也可以安装用户模式的服务。但是需要注意的是，用户模式仅每次用户首次登陆时，服务才会被拉起，无法做到开机就启动的效果。但是低权限使用的话，这样的做法也会合理一些。
+
+
+记得改路径哈~ 
+
+```bash
+cat > ~/.config/systemd/user/clion.service << EOF
+[Unit]
+Description=Jetbrains Projector - CLion
+ 
+[Service]
+Type=simple
+ExecStart=/home/xuegao/.projector/configs/CLion/run.sh
+Restart=always
+
+[Install]
+WantedBy=default.target
+
+EOF
+systemctl daemon-reload --user
+systemctl enable --now clion.service --user
 ```
 
 ### 运行状态
@@ -237,8 +270,6 @@ Projector也有CS架构中的Client，体验一样非常舒服，可以在Toolbo
 Projector也有Docker版本，但是毕竟开发需要，需要各种环境，还是建议直接在宿主中安装体验会好一些~后续安装其他系统依赖时也会方便很多。
 
 当然，以官方的说法来说，Projector仍然还是一项非常年轻的技术，它可能一时还不能用于生产环境，日常使用时可能也会存在其他问题，还需要时间成长。博主我在短时间使用中，就发现了其在FireFox浏览器中无法正常输入的问题，暂时还没有定位原因，可能也会潜在其他的小问题，使用Client或许能够较大提升使用体验。
-
-最后，如果你喜欢，可以在使用时遇到问题时多多向社区反馈，甚至是去提交你的commit，让这个年轻的软件为自己所用时也变得更好。
 
 > Projector is a technology rather than an end-user solution. You can use it to customize your own infrastructure to meet the needs of your business. Ansible? Sure. Kubernetes? No problem.
 > 
