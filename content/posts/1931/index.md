@@ -1,7 +1,7 @@
 ---
 title: 非国行的Android不能使用国行的Watch4？不指望三星，自力更生完美解决
 date: 2021-10-10T17:30:21+08:00
-draft: true
+draft: false
 categories:
   - 问题解决
 ---
