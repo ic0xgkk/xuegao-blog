@@ -5,7 +5,7 @@ footnoteReturnLinkContents: ↩
 title: 雪糕博客
 enableEmoji: true
 # 每页最多文章数
-paginate: 6
+paginate: 10
 # 摘要长度
 summaryLength: 100
 timeZone: Asia/Hong_Kong
@@ -58,9 +58,8 @@ params:
   ShowPostNavLinks: true
   homeInfoParams:
     Title: 首页
-    Content: "- Hey! 欢迎来到雪糕的个人博客\n
-    - 此处是一位不愿意将就并且专注于网络技术的攻城狮的博客。能码代码能运维，爱好一本正经得瞎jb搞网络\n
-    - \U0001F31F **常年提供各种网络和运维方案。欢迎在[关于](/about/)页面中取得我的联系方式与我联系**\n
+    Content: "- 欢迎来到雪糕的个人博客\n
+    - 此处是一位不愿意将就并且专注于网络技术的攻城狮的博客。能码代码能运维，爱好一本正经地瞎jb搞网络\n
     - 欢迎同行兄弟交流沟通~"
   socialIcons:
     - name: github
