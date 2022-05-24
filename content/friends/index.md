@@ -23,3 +23,12 @@ enableContentHeader: false
 ### [清酒踏月 – 成长的过程总是荆棘满路！](https://blog.lkxin.cn/)
 
 ### [AUTUMNLI MAGIC](https://wautumnli.github.io/)
+
+### [not b@tk1z - 一帘新语随风去，半山明月踏江来](https://blog.batkiz.com/)
+
+### [泫言 - 记录有意思的东西，聊点技术（Go/C++/Linux），偶尔安利数码产品，讲讲思考](https://blog.cugxuan.cn/)
+
+### [lshs](https://www.cnblogs.com/lshs/)
+
+### [lay's 博客 - 专注于C,Python,Rust,Golang,Haskell,分布式系统,分布式计算,kindle,kaggle](https://hadxu.github.io/)
+
