@@ -198,7 +198,7 @@ directories:
 
 我们再来看看刚刚创建的项目中的`baseconf.proto`文件的内容。
 
-```yaml
+```protobuf
 syntax = "proto3";
 
 package pigapi.v1;
