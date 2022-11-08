@@ -1,0 +1,59 @@
+name: Deploy (to Aliyun OSS)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  TZ: Asia/Shanghai
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency: 
+      group: 'xuegao-blog'
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 1
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: 'latest'
+
+      - name: Build
+        run: hugo -v --minify
+
+# 备注：v1.3版本的`fangbinwei/aliyun-oss-website-action@v1`是可以支持全球加速。
+
+      - name: Upload to mainland
+        uses: fangbinwei/aliyun-oss-website-action@v1
+        with:
+          accessKeyId: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          accessKeySecret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          bucket: ${{ secrets.ALIYUN_OSS_BUCKET_MAINLAND }}
+          endpoint: "https://oss-accelerate.aliyuncs.com"
+          folder: "public"
+          incremental: true
+          skipSetting: true
+
+      - name: Upload to global
+        uses: fangbinwei/aliyun-oss-website-action@v1
+        with:
+          accessKeyId: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          accessKeySecret: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          bucket: ${{ secrets.ALIYUN_OSS_BUCKET_GLOBAL }}
+          endpoint: "https://oss-accelerate.aliyuncs.com"
+          folder: "public"
+          incremental: true
+          skipSetting: true

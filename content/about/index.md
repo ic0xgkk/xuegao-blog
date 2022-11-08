@@ -15,7 +15,7 @@ summary: "关于&声明"
 
 ## 可用性报告
 
-链接：https://stats.uptimerobot.com/z6z6KCRrQj
+链接： https://stats.uptimerobot.com/z6z6KCRrQj
 
 ## 博客时间线
 
@@ -27,8 +27,7 @@ summary: "关于&声明"
 ## 博主
 
 * **请叫我**: 雪糕
-* **主页**: https://my.xuegaogg.com
-* **Telegram**: https://t.me/xuegao
+* **Telegram**:  https://t.me/xuegao
 * **微信**: ![QRCode](./1570499832-WeChat.png)
 
 ## 版权相关
