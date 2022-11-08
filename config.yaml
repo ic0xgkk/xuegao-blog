@@ -60,7 +60,7 @@ params:
     Title: 首页
     Content: "- 欢迎来到雪糕的个人博客\n
     - 此处是一位不愿意将就并且专注于网络技术的攻城狮的博客。能码代码能运维，爱好一本正经地瞎jb搞网络\n
-    - 欢迎同行兄弟交流沟通~"
+    - 欢迎同行兄弟交流~"
   socialIcons:
     - name: github
       url: 'https://github.com/ic0xgkk'
