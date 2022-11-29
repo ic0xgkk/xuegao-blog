@@ -18,13 +18,15 @@ categories:
 
 上边提到的这两个远程方案，前者远程渲染后使用WebSocket串流到浏览器，后者直接启动一个Agent，本地渲染、远程只负责核心功能。直到现在，这两个方案仍然在我的项目中活跃，因为Projector只是远程渲染，因此它拥有完整的IDE功能特性，并且几乎不存在影响使用的bug，但是它不适合弱网络使用，毕竟远程渲染再串流，弱网络下开发体验会非常差。而Gateway虽然本地渲染、远程只负责核心功能，但是它经常出现保存文件失败、运行提权失败、创建目录没反应等bug，非常影响使用。更要命的，如果你在ARM平台的Linux上使用Gateway启动IDE，会收到下边这么个提示：
 
-<img src="./1.png" alt="1" style="zoom:50%;" />
+![1](./1.png)
 
 就问你窒不窒息？
 
 虽然在ARM平台的Projector手工更换JBR（JetBrains Runtime）后好歹还能启动和使用，但是逢运行或者调试程序就崩溃，实在是难绷。
 
 为此，博主我查找了官方YouTrack上的一些回复，并且在我的ARM环境上测试了一下，得到了今天这篇文章——分享给大家如何在ARM平台的Linux上启动JetBrains Gateway远程开发，并解决一些bug，让你更进一步提高开发效率。
+
+类似的，你也可以尝试把它搭建在你的树莓派上，如果你的内存足够大，你的路由器甚至都可以拿来跑，让你随时随地可以写代码2333
 
 # 环境
 
@@ -90,7 +92,9 @@ vim plugins/remote-dev-server/bin/launcher.sh
 ./bin/remote-dev-server.sh run <你的项目目录> -l 0.0.0.0 -p 5991
 ```
 
-启动后，你需要翻看控制台的输出，其中会有一行类似下边的内容：
+如果你嫌它输出的警告太多，可以将stderr重定向一下（在上边的命令后加上`2>/dev/null`），就可以避免控制台输出刷的太快。
+
+启动后，你需要翻看控制台的输出，其中会有一块类似下边的内容：
 
 ```bash
 *********************************************************
@@ -120,7 +124,7 @@ Gateway link: jetbrains-gateway://connect#（省略）
 
 经过一番排查，可以定位出两个问题。上边的`XXX`为错误代码，如果这个错误代码是127，那么就是`pkexec`提权失败导致的，如果错误代码是1，那么就是Java子进程启动方式错误导致的。一般情况下，你会首先遇到127的错误代码，解决完提权问题后，就会遇到1的错误代码，再解决问题后，即可正常使用。
 
-这两个问题分别可以对应到官方YouTrack上的这两个问题单[^3][^4]，第二个问题已经提交给官方修复 : )
+这两个问题分别可以对应到官方YouTrack上的这两个问题单[^3][^4]，已经提交给官方修复 : )
 
 [^3]: https://youtrack.jetbrains.com/issue/GTW-2499/Run-with-sudo-doesnt-work
 [^4]: https://youtrack.jetbrains.com/issue/GO-13971/Run-with-sudo-failed-can-not-debug-as-root
@@ -184,6 +188,20 @@ EOT
     chmod 755 "$file"
   }
 ```
+
+# 使用arm版本的dlv
+
+GoLand默认带了x86版本的dlv，用于调试Go程序，如果你使用了arm平台，那么会被要求指定arm版本的dlv程序路径。
+
+![4](./4.png)
+
+选择**Help** -> **Edit Custom Properties... (on Host)**，在打开的文件末尾，添加像这样的一行：
+
+```ini
+dlv.path=/home/harris/runtime/go/path/bin/dlv
+```
+
+**路径需要根据实际情况修改**。当你使用`go install`安装dlv之后，该可执行文件一般位于GOPATH下的bin目录中。
 
 # 题外话：initramfs增加驱动
 
