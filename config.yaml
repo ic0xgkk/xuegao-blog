@@ -47,7 +47,7 @@ params:
   AuthorName: 雪糕
   GitHubUser: ic0xgkk
   SidebarRecentLimit: 6
-  Subtitle: 一位不愿意将就并且专注于网络技术的攻城狮的博客
+  Subtitle: 一位不愿意将就并且专注于网络技术的博主的博客
   ShowReadingTime: false
   displayFullLangName: true
   ShowBreadCrumbs: true
@@ -58,9 +58,12 @@ params:
   ShowPostNavLinks: true
   homeInfoParams:
     Title: 首页
-    Content: "- 欢迎来到雪糕的个人博客\n
-    - 此处是一位不愿意将就并且专注于网络技术的攻城狮的博客。能码代码能运维，爱好一本正经地瞎jb搞网络\n
-    - 欢迎同行兄弟交流~"
+    Content: "- 欢迎来到雪糕的个人博客。\n
+    - 这里是一位不愿意将就并且专注于网络技术的博主的博客。\n
+    - 专注各种网络相关的技术，ICT数通、SDN、云原生、虚拟化、高性能网络和异构计算，偶尔聊聊新奇的玩意，NAS、软路由、IDC玩家，国家电网VIP。\n
+    - 欢迎同行兄弟交流~\n
+    - \n
+    - 打赏请到文章页扫码关注微信订阅号，在订阅号文章下方使用打赏，感谢支持。"
   socialIcons:
     - name: github
       url: 'https://github.com/ic0xgkk'
