@@ -1,6 +1,6 @@
 ---
 title: "关于"
-summary: "关于雪糕博客"
+summary: "关于本站"
 ShowToc: false
 enableContentHeader: false
 ---

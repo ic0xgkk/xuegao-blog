@@ -1,7 +1,7 @@
 ---
 title: "友链"
 url: "/friends/"
-summary: "friends"
+summary: "友情链接"
 ShowToc: false
 enableContentHeader: false
 ---

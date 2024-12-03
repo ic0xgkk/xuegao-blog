@@ -98,34 +98,33 @@ markup:
     minMatchCharLength: 0
     keys: ["title", "permalink", "content"] ##  can be less but not more than shown in list
 sitemap:
-  changefreq: weekly
+  changefreq: daily
   filename: sitemap.xml
-  priority: 0.9
+  priority: -1
+
+taxonomies:
+  # 不生成类别，不然sitemap中会有层级，百度好像无法检索。
+  # category: categories
+  tag: tags
 
 menu:
     main:
-        - identifier: home
-          name: 主页
-          url: /
-          # 就是单纯显示的顺序，不是sitemap的权重。
-          weight: 1
-        - identifier: timeline
-          name: 时间线
+        - name: 时间线
           url: /timeline/
+          # 就是单纯显示的顺序，不是sitemap的权重。
           weight: 30
-        - identifier: tags
-          name: 标签
+        # - name: 分类
+        #   url: /categories/
+        #   weight: 35
+        - name: 标签
           url: /tags/
           weight: 40
-        - identifier: search
-          name: 搜索
+        - name: 搜索
           url: /search/
           weight: 45
-        - identifier: friends
-          name: 友链
+        - name: 友链
           url: /friends/
           weight: 46
-        - identifier: about
-          name: 关于
+        - name: 关于
           url: /about/
           weight: 50
