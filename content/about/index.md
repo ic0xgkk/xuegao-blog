@@ -1,7 +1,8 @@
 ---
 title: "关于"
-layout: "about"
-summary: "关于"
+summary: "关于雪糕博客"
+ShowToc: false
+enableContentHeader: false
 ---
 
 这里这是一位网络技术出身的博主的博客，以前思考技术，最近开始思考产品和商业模式，所以博客慢慢会有一些变化，希望大家能够喜欢~

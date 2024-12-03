@@ -4,6 +4,7 @@ baseURL: 'https://blog.xuegaogg.com/'
 footnoteReturnLinkContents: ↩
 title: 雪糕博客
 enableEmoji: true
+enableRobotsTXT: true
 # 每页最多文章数
 paginate: 10
 # 摘要长度
@@ -14,6 +15,7 @@ enableInlineShortcodes: true
 buildDrafts: false
 buildFuture: false
 buildExpired: false
+googleAnalytics: GTM-P3B33T3G
 # 确保可以正确统计中文字体
 hasCJKLanguage: true
 outputs:
@@ -21,6 +23,14 @@ outputs:
     - HTML
     - RSS
     - JSON
+
+defaultContentLanguage: zh
+languages:
+  zh:
+    languageCode: zh-CN
+    languageDirection: zh
+    languageName: 中文
+    weight: 1
 
 # 优化输出
 minify:
@@ -56,11 +66,9 @@ params:
   tocopen: true
   ShowPostNavLinks: true
   homeInfoParams:
-    Title: 首页
-    Content: "欢迎来到雪糕的个人博客，这里什么都有，可随意观看～"
+    Title: 主页
+    Content: "什么都搞，不再专注网络了"
   socialIcons:
-    - name: github
-      url: 'https://github.com/ic0xgkk'
     - name: RSS
       url: index.xml
 
@@ -97,16 +105,17 @@ sitemap:
 menu:
     main:
         - identifier: home
-          name: 首页
+          name: 主页
           url: /
+          # 就是单纯显示的顺序，不是sitemap的权重。
           weight: 1
-        - identifier: archives
-          name: 归档
-          url: /archives/
+        - identifier: timeline
+          name: 时间线
+          url: /timeline/
           weight: 30
-        - identifier: categories
-          name: 分类
-          url: /categories/
+        - identifier: tags
+          name: 标签
+          url: /tags/
           weight: 40
         - identifier: search
           name: 搜索
