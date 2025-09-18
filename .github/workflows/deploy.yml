@@ -1,4 +1,4 @@
-name: Deploy to Tencent COS
+name: Deploy
 
 on:
   push:
@@ -45,5 +45,9 @@ jobs:
       - name: Upload to pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public/
+          path: public/
+
+      - name: Deploy to pages
+        uses: actions/deploy-pages@v4
+
          
