@@ -1,0 +1,49 @@
+name: Deploy to Tencent COS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  TZ: Asia/Shanghai
+
+concurrency:
+  group: "deploy"
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Preset
+        run: |
+          chmod a+x ./coscli
+          chmod a+x ./hugo
+
+          # 执行发布前脚本，这里执行一次以免人工推代码前忘了执行
+          chmod a+x ./before_publish.sh && ./before_publish.sh
+
+      - name: Build
+        run: |
+          ./hugo --gc -v --minify
+
+      - name: Upload to pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public/
+         
